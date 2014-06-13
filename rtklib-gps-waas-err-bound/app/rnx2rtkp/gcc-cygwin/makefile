@@ -107,58 +107,57 @@ test : test21 test22 test23 test24 test25 test26 test27
 test1 :
 	$(CMD1) $(INPUT11) -x 5 -o test1.pos
 test2 :
-	$(CMD1) -t -e $(OPTS1) $(INPUT11) > test2.pos
+	./runtest.sh "$(CMD1) -t -e $(OPTS1) $(INPUT11)" test2 > test2.pos
 test3 :
-	$(CMD1) -t -p 1 -e $(OPTS1) $(INPUT11) $(INPUT12) > test3.pos
+	./runtest.sh "$(CMD1) -t -p 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" test3 > test3.pos
 test4 :
-	$(CMD1) -t -p 3 -e $(OPTS1) $(INPUT11) $(INPUT12) > test4.pos
+	./runtest.sh "$(CMD1) -t -p 3 -e $(OPTS1) $(INPUT11) $(INPUT12)" test4 > test4.pos
 test5 :
-	$(CMD1) -t -m 15 -e $(OPTS1) $(INPUT11) $(INPUT12) > test5.pos
+	./runtest.sh "$(CMD1) -t -m 15 -e $(OPTS1) $(INPUT11) $(INPUT12)" test5 > test5.pos
 test6 :
-	$(CMD1) -t -f 1 -e $(OPTS1) $(INPUT11) $(INPUT12) > test6.pos
+	./runtest.sh "$(CMD1) -t -f 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" test6 > test6.pos
 test7 :
-	$(CMD1) -t -v 5 -e $(OPTS1) $(INPUT11) $(INPUT12) > test7.pos
+	./runtest.sh "$(CMD1) -t -v 5 -e $(OPTS1) $(INPUT11) $(INPUT12)" test7 > test7.pos
 test8 :
-	$(CMD1) -t -i -e $(OPTS1) $(INPUT11) $(INPUT12) > test8.pos
+	./runtest.sh "$(CMD1) -t -i -e $(OPTS1) $(INPUT11) $(INPUT12)" test8 > test8.pos
 test9 :
-	$(CMD1) -t -p 0 $(OPTS1) $(INPUT11) > test9.pos
+	./runtest.sh "$(CMD1) -t -p 0 $(OPTS1) $(INPUT11)" test9 > test9.pos
 test10 :
-	$(CMD1) -t -p 0 $(OPTS1) $(INPUT11) -o test10.pos
+	./runtest.sh "$(CMD1) -t -p 0 $(OPTS1) $(INPUT11) -o test10.pos" test10
 test11 :
-	$(CMD1) -t -p 0 -n $(OPTS1) $(INPUT11) > test11.pos
+	./runtest.sh "$(CMD1) -t -p 0 -n $(OPTS1) $(INPUT11)" test11 > test11.pos
 test12 :
-	$(CMD1) -t -p 0 -g $(OPTS1) $(INPUT11) > test12.pos
+	./runtest.sh "$(CMD1) -t -p 0 -g $(OPTS1) $(INPUT11)" test12 > test12.pos
 test13 :
-	$(CMD1) -t -p 0 $(OPTS1) $(INPUT11) > test13.pos
+	./runtest.sh "$(CMD1) -t -p 0 $(OPTS1) $(INPUT11)" test13 > test13.pos
 test14 :
-	$(CMD1) -t -p 0 -u $(OPTS1) $(INPUT11) > test14.pos
+	./runtest.sh "$(CMD1) -t -p 0 -u $(OPTS1) $(INPUT11)" test14 > test14.pos
 test15 :
-	$(CMD1) -t -p 0 -d 9 $(OPTS1) $(INPUT11) > test15.pos
+	./runtest.sh "$(CMD1) -t -p 0 -d 9 $(OPTS1) $(INPUT11)" test15 > test15.pos
 test16 :
-	$(CMD1) -t -p 0 -s , $(OPTS1) $(INPUT11) > test16.pos
+	./runtest.sh "$(CMD1) -t -p 0 -s , $(OPTS1) $(INPUT11)" test16 > test16.pos
 test17 :
-	$(CMD1) -t -b -e $(OPTS1) $(INPUT11) $(INPUT12) > test17.pos
+	./runtest.sh "$(CMD1) -t -b -e $(OPTS1) $(INPUT11) $(INPUT12)" test17 > test17.pos
 test18 :
-	$(CMD1) -t -c -e $(OPTS1) $(INPUT11) $(INPUT12) > test18.pos
+	./runtest.sh "$(CMD1) -t -c -e $(OPTS1) $(INPUT11) $(INPUT12)" test18 > test18.pos
 test19 :
-	$(CMD1) -t -h -e $(OPTS1) $(INPUT11) $(INPUT12) > test19.pos
+	./runtest.sh "$(CMD1) -t -h -e $(OPTS1) $(INPUT11) $(INPUT12)" test19 > test19.pos
 test20 :
-	$(CMD1) -t -p 4 -a $(OPTS1) $(INPUT11) $(INPUT12) > test20.pos
+	./runtest.sh "$(CMD1) -t -p 4 -a $(OPTS1) $(INPUT11) $(INPUT12)" test20 > test20.pos
 test21 :
-	$(CMD1) $(INPUT11) $(INPUT12) > test21.pos
+	./runtest.sh "$(CMD1) $(INPUT11) $(INPUT12)" test21 > test21.pos
 test22 :
-	$(CMD1) -k opts1.conf $(INPUT11) $(INPUT12) > test22.pos
+	./runtest.sh "$(CMD1) -k opts1.conf $(INPUT11) $(INPUT12)" test22 > test22.pos
 test23 :
-	$(CMD1) -k opts2.conf $(INPUT11) $(INPUT12) > test23.pos
+	./runtest.sh "$(CMD1) -k opts2.conf $(INPUT11) $(INPUT12)" test23 > test23.pos
 test24 :
-	$(CMD1) -k opts3.conf $(INPUT11) $(INPUT12) -y 2 -o test24.pos
+	./runtest.sh "$(CMD1) -k opts3.conf $(INPUT11) $(INPUT12) -y 2 -o test24.pos" test24
 test25 :
-	$(CMD1) -k opts4.conf $(INPUT11) $(INPUT12) -y 2 -o test25.pos
+	./runtest.sh "$(CMD1) -k opts4.conf $(INPUT11) $(INPUT12) -y 2 -o test25.pos" test25
 test26 :
-	./test26.sh $(CMD1)
+	./runtest.sh "$(CMD1) -k SSSS.conf Uslo3610.06O Uslo3610.06N Geo135_00b4_1407_03.sbs -o test26.pos" test26
 test27 :
-	./test27.sh $(CMD1)
-
+	./runtest.sh "$(CMD1) -k SBMB.conf Uslo3610.06O Uslo3610.06N -o test27.pos" test27
 clean :
 	rm -f rnx2rtkp rnx2rtkp.exe *.o *.pos *.trace *.stat
 
