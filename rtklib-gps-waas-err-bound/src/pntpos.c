@@ -63,11 +63,13 @@ static double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     if (!(sys=satsys(obs->sat,NULL))) return 0.0;
     
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS */
+    // L5 is preferentially used even if L2 is available?
     if (NFREQ>=3&&(sys&(SYS_GAL|SYS_SBS))) j=2;
     
     if (NFREQ<2||lam[i]==0.0||lam[j]==0.0) return 0.0;
     
     /* test snr mask */
+    // Skip this observation of the SNR is too low.
     if (iter>0) {
         if (testsnr(0,i,azel[1],obs->SNR[i]*0.25,&opt->snrmask)) {
             trace(4,"snr mask: %s sat=%2d el=%.1f snr=%.1f\n",
@@ -79,8 +81,13 @@ static double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
         }
     }
     gamma=SQR(lam[j])/SQR(lam[i]); /* f1^2/f2^2 */
+
+    // Uncorrected pseudoranges for the two frequencies.
     P1=obs->P[i];
     P2=obs->P[j];
+
+    // The L1 code to L2/L5 code bias, L1 code to L2/L5 carrier bias,
+    // and L2/L5 code to L2/L5 carrier bias of the satellite.
     P1_P2=nav->cbias[obs->sat-1][0];
     P1_C1=nav->cbias[obs->sat-1][1];
     P2_C2=nav->cbias[obs->sat-1][2];
@@ -89,6 +96,8 @@ static double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     if (P1_P2==0.0&&(sys&(SYS_GPS|SYS_GAL|SYS_QZS))) {
         P1_P2=(1.0-gamma)*gettgd(obs->sat,nav);
     }
+
+    // Compute the corrected pseudorange.
     if (opt->ionoopt==IONOOPT_IFLC) { /* dual-frequency */
         
         if (P1==0.0||P2==0.0) return 0.0;
@@ -222,13 +231,18 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
             continue;
         }
         /* geometric distance/azimuth/elevation angle */
+        // rs = satellite position at transmission (ecef)
+        // rr = receiver position at reception (ecef)
+        // e = receiver-to-satellite unit vector (ecef) as output from geodist
         if ((r=geodist(rs+i*6,rr,e))<=0.0||
             satazel(pos,e,azel+i*2)<opt->elmin) continue;
         
-        /* psudorange with code bias correction */
+        /* Psudorange with satellite code bias corrections. */
+        // vmeas = 0.09 meter^2 = ERR_CBIAS * ERR_CBIAS.
         if ((P=prange(obs+i,nav,azel+i*2,iter,opt,&vmeas))==0.0) continue;
         
         /* excluded satellite? */
+        // Why isn't this line at the top of the loop?
         if (satexclude(obs[i].sat,svh[i],opt)) continue;
         
         /* ionospheric corrections */
@@ -531,14 +545,21 @@ extern int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     double *rs,*dts,*var,*azel_,*resp;
     int i,stat,vsat[MAXOBS]={0},svh[MAXOBS];
     
+    // Initialize solution status to "no solution".
     sol->stat=SOLQ_NONE;
     
+    // If number of pseudorange measurements is zero or less, return an error.
     if (n<=0) {strcpy(msg,"no observation data"); return 0;}
     
+    // Write trace message.
     trace(3,"pntpos  : tobs=%s n=%d\n",time_str(obs[0].time,3),n);
     
+    // Set solution time to time of the first pseudorange measurement.
     sol->time=obs[0].time; msg[0]='\0';
     
+    // Allocate working matrices to hold the satellite positions (rs),
+    // satellite clock offsets (dts), satellite position and clock variances (var),
+    // satellite azimuth and elevation (rad), and
     rs=mat(6,n); dts=mat(2,n); var=mat(1,n); azel_=zeros(2,n); resp=mat(1,n);
     
     if (opt_.mode!=PMODE_SINGLE) { /* for precise positioning */

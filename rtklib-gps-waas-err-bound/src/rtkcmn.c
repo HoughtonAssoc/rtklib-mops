@@ -3115,6 +3115,9 @@ extern double satazel(const double *pos, const double *e, double *azel)
     double az=0.0,el=PI/2.0,enu[3];
     
     if (pos[2]>-RE_WGS84) {
+    	// pos = receiver position (geodetic coordinates)
+    	// e = receiver-to-satellite unit vector (ECEF coordinates)
+    	// enu = receiver-to-satellite unit vector (enu coordinates)
         ecef2enu(pos,e,enu);
         az=dot(enu,enu,2)<1E-12?0.0:atan2(enu[0],enu[1]);
         if (az<0.0) az+=2*PI;
