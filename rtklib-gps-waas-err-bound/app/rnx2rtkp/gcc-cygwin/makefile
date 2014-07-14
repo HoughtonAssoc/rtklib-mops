@@ -100,9 +100,10 @@ CMD1    = ./rnx2rtkp
 INPUT11 = ../../../test/data/rinex/07590920.05o ../../../test/data/rinex/30400920.05n
 INPUT12 = ../../../test/data/rinex/30400920.05o
 OPTS1   = -r -3978241.958 3382840.234 3649900.853
+USLO3610INPUT = Uslo3610.06O Uslo3610.06N
 test : test1 test2 test3 test4 test5 test6 test7 test8 test9 test10
 test : test11 test12 test13 test14 test15 test16 test17 test18 test19 test20
-test : test21 test22 test23 test24 test25 test26 test27
+test : test21 test22 test23 test24 test25 test26 test27 test28
 
 test1 :
 	$(CMD1) $(INPUT11) -x 5 -o test1.pos
@@ -155,9 +156,12 @@ test24 :
 test25 :
 	./runtest.sh "$(CMD1) -k opts4.conf $(INPUT11) $(INPUT12) -y 2 -o test25.pos" test25
 test26 :
-	./runtest.sh "$(CMD1) -k SSSS.conf Uslo3610.06O Uslo3610.06N Geo135_00b4_1407_03.sbs -o test26.pos" test26
+	./runtest.sh "$(CMD1) -k SSSS.conf $(USLO3610INPUT) Geo135_00b4_1407_03.sbs -o test26.pos" test26
 test27 :
-	./runtest.sh "$(CMD1) -k SBMB.conf Uslo3610.06O Uslo3610.06N -o test27.pos" test27
+	./runtest.sh "$(CMD1) -k SBMB.conf $(USLO3610INPUT) -o test27.pos" test27
+test28 :
+	./runtest.sh "$(CMD1) -k SSSS_RAIM.conf $(USLO3610INPUT) Geo135_00b4_1407_03.sbs -o test28.pos" test28
+
 clean :
 	rm -f rnx2rtkp rnx2rtkp.exe *.o *.pos *.trace *.stat
 
