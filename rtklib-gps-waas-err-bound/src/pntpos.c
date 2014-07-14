@@ -14,6 +14,7 @@
 *                           changed api: ionocorr()
 *           2011/11/08 1.2  enable snr mask for single-mode (rtklib_2.4.1_p3)
 *           2012/12/25 1.3  add variable snr mask
+*			2014/07/02 1.4	add varrx(), add varrx to rescode() PR variance
 *-----------------------------------------------------------------------------*/
 #include "rtklib.h"
 
@@ -31,6 +32,16 @@ static const char rcsid[]="$Id:$";
 #define ERR_CBIAS   0.3         /* code bias error std (m) */
 #define REL_HUMI    0.7         /* relative humidity for saastamoinen model */
 
+/* variance of airborne receiver error (WAAS MOPS) ----------------------------*/
+extern double varrx(double el, int sys)
+{
+    double varmp,varsignal;
+	double aad_a_min;		/* max noise bound for AAD-A equipment */
+    aad_a_min=sys==SYS_SBS?1.8:(sys==SYS_GPS?0.36:0.0);
+    varmp=SQR(0.13+0.53*exp(-el*R2D/10.0));
+	varsignal=SQR(aad_a_min);
+    return (varmp+varsignal);
+}
 /* pseudorange measurement error variance ------------------------------------*/
 static double varerr(const prcopt_t *opt, double el, int sys)
 {
@@ -253,7 +264,8 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
         vsat[i]=1; resp[i]=v[nv];
         
         /* error variance */
-        var[nv++]=varerr(opt,azel[1+i*2],sys)+vare[i]+vmeas+vion+vtrp;
+/*        var[nv++]=varerr(opt,azel[1+i*2],sys)+vare[i]+vmeas+vion+vtrp;	/* original RTKLIB_2.4.2 receiver variances */
+		var[nv++]=varrx(azel[1+i*2],sys)+vare[i]+vion+vtrp;		/* ACR 2-Jul-14 */
         
         trace(4,"sat=%2d azel=%5.1f %4.1f res=%7.3f sig=%5.3f\n",obs[i].sat,
               azel[i*2]*R2D,azel[1+i*2]*R2D,resp[i],sqrt(var[nv-1]));
