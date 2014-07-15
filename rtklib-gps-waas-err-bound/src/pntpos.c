@@ -264,9 +264,12 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
         vsat[i]=1; resp[i]=v[nv];
         
         /* error variance */
-/*        var[nv++]=varerr(opt,azel[1+i*2],sys)+vare[i]+vmeas+vion+vtrp;	/* original RTKLIB_2.4.2 receiver variances */
+#ifdef WAAS_STUDY
 		var[nv++]=varrx(azel[1+i*2],sys)+vare[i]+vion+vtrp;		/* ACR 2-Jul-14 */
-        
+#else
+		var[nv++]=varerr(opt,azel[1+i*2],sys)+vare[i]+vmeas+vion+vtrp;
+#endif
+
         trace(4,"sat=%2d azel=%5.1f %4.1f res=%7.3f sig=%5.3f\n",obs[i].sat,
               azel[i*2]*R2D,azel[1+i*2]*R2D,resp[i],sqrt(var[nv-1]));
     }

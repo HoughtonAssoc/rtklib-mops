@@ -714,8 +714,11 @@ extern int sbsioncorr(gtime_t time, const nav_t *nav, const double *pos,
         if (!igp[i]) continue;
         t=timediff(time,igp[i]->t0);
         *delay+=w[i]*igp[i]->delay;
-/*        *var+=w[i]*varicorr(igp[i]->give)*9E-8*fabs(t);          /* original RTKLIB_2.4.2 formulation */
+#ifdef WAAS_STUDY
         *var+=w[i]*varicorr(igp[i]->give);				/* updated by ACR 23-Jun-14 */
+#else
+        *var+=w[i]*varicorr(igp[i]->give)*9E-8*fabs(t);
+#endif
     }
     *delay*=fp; *var*=fp*fp;
     
@@ -834,8 +837,11 @@ static int sbsfastcorr(gtime_t time, int sat, const sbssat_t *sbssat,
             *prc+=p->fcorr.rrc*t;
         }
 #endif
-/*        *var=varfcorr(p->fcorr.udre)+degfcorr(p->fcorr.ai)*t*t/2.0;	/* original RTKLIB_2.4.2 statement adds m to m2 */
-        *var=varfcorr(p->fcorr.udre);	/* 26-Jun-14 ACR, remove second term */
+#ifdef WAAS_STUDY
+        *var=varfcorr(p->fcorr.udre);	/* 26-Jun-14 ACR */
+#else
+        *var=varfcorr(p->fcorr.udre)+degfcorr(p->fcorr.ai)*t*t/2.0;	
+#endif
         
         trace(5,"sbsfastcorr: sat=%3d prc=%7.2f sig=%7.2f t=%5.0f\n",sat,
               *prc,sqrt(*var),t);

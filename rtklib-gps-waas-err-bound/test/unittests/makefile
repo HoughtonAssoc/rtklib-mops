@@ -1,7 +1,7 @@
 # makefile for rtklib unit test
 
 SRC    = ../../src
-CFLAGS = -Wall -O3 -ansi -pedantic -DWIN32 -I$(SRC) -DTRACE -DENAGLO -DENAQZS
+CFLAGS = -Wall -O3 -ansi -pedantic -DWIN32 -I$(SRC) -DTRACE -DENAGLO -DENAQZS -DWAAS_STUDY
 #LDLIBS = -lm -llapack -lblas
 LDLIBS = -ggdb -O0 -lm -lrt -lwinmm -L/usr/lib -L/usr/lib/w32api
 CC = gcc
