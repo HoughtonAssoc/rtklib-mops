@@ -320,7 +320,11 @@ static void procpos(FILE *fp, const prcopt_t *popt, const solopt_t *sopt,
         
         if (mode==0) { /* forward/backward */
             if (!solstatic) {
+#ifdef WAAS_STUDY
+                outsol(fp,&rtk.sol,rtk.rb,sopt,&rtk.pl);
+#else
                 outsol(fp,&rtk.sol,rtk.rb,sopt);
+#endif
             }
             else if (time.time==0||pri[rtk.sol.stat]<=pri[sol.stat]) {
                 sol=rtk.sol;
@@ -345,7 +349,11 @@ static void procpos(FILE *fp, const prcopt_t *popt, const solopt_t *sopt,
     }
     if (mode==0&&solstatic&&time.time!=0.0) {
         sol.time=time;
+#ifdef WAAS_STUDY
+        outsol(fp,&sol,rb,sopt,&rtk.pl);
+#else
         outsol(fp,&sol,rb,sopt);
+#endif
     }
     rtkfree(&rtk);
 }
@@ -437,7 +445,11 @@ static void combres(FILE *fp, const prcopt_t *popt, const solopt_t *sopt)
             sols.qr[5]=(float)Qs[2];
         }
         if (!solstatic) {
+#ifdef WAAS_STUDY
+            outsol(fp,&sols,rbs,sopt,NULL);
+#else
             outsol(fp,&sols,rbs,sopt);
+#endif
         }
         else if (time.time==0||pri[sols.stat]<=pri[sol.stat]) {
             sol=sols;
@@ -449,7 +461,11 @@ static void combres(FILE *fp, const prcopt_t *popt, const solopt_t *sopt)
     }
     if (solstatic&&time.time!=0.0) {
         sol.time=time;
+#ifdef WAAS_STUDY
+        outsol(fp,&sol,rb,sopt,NULL);
+#else
         outsol(fp,&sol,rb,sopt);
+#endif
     }
 }
 /* read prec ephemeris, sbas data, lex data, tec grid and open rtcm ----------*/
@@ -623,8 +639,11 @@ static int avepos(double *ra, int rcv, const obs_t *obs, const nav_t *nav,
                 opt->exsats[data[j].sat-1]!=1) j++;
         }
         if (j<=0||!screent(data[0].time,ts,ts,1.0)) continue; /* only 1 hz */
-        
+#ifdef WAAS_STUDY
+        if (!pntpos(data,j,nav,opt,&sol,NULL,NULL,NULL,msg)) continue;
+#else
         if (!pntpos(data,j,nav,opt,&sol,NULL,NULL,msg)) continue;
+#endif
         
         for (i=0;i<3;i++) ra[i]+=sol.rr[i];
         n++;

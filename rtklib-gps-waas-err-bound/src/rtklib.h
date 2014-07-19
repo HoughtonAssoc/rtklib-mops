@@ -954,6 +954,9 @@ typedef struct {        /* processing options type */
     int refpos;         /* base position for relative mode */
                         /* (0:pos in prcopt,  1:average of single pos, */
                         /*  2:read from file, 3:rinex header, 4:rtcm pos) */
+#ifdef WAAS_STUDY
+    int waas_study;     /* if = 1, HAI WAAS study code is switched in. */
+#endif
     double eratio[NFREQ]; /* code/phase error ratio */
     double err[5];      /* measurement error factor */
                         /* [0]:reserved */
@@ -1083,6 +1086,13 @@ typedef struct {        /* ambiguity control type */
     double LCv[4];      /* linear combination variance */
 } ambc_t;
 
+#ifdef WAAS_STUDY
+typedef struct {
+	double hpl;			/* horizontal protection level */
+	double vpl;			/* vertical protection level */
+} protlevels_t;
+#endif
+
 typedef struct {        /* RTK control/result type */
     sol_t  sol;         /* RTK solution */
     double rb[6];       /* base position/velocity (ecef) (m|m/s) */
@@ -1096,6 +1106,9 @@ typedef struct {        /* RTK control/result type */
     int neb;            /* bytes in error message buffer */
     char errbuf[MAXERRMSG]; /* error message buffer */
     prcopt_t opt;       /* processing options */
+#ifdef WAAS_STUDY
+    protlevels_t pl;		/* protection levels */
+#endif
 } rtk_t;
 
 typedef struct {        /* receiver raw data control type */
@@ -1594,9 +1607,15 @@ extern int lambda(int n, int m, const double *a, const double *Q, double *F,
                   double *s);
 
 /* standard positioning ------------------------------------------------------*/
+#ifdef WAAS_STUDY
+extern int pntpos(const obsd_t *obs, int n, const nav_t *nav,
+                  const prcopt_t *opt, sol_t *sol, double *azel,
+                  ssat_t *ssat, protlevels_t *pl, char *msg);
+#else
 extern int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                   const prcopt_t *opt, sol_t *sol, double *azel,
                   ssat_t *ssat, char *msg);
+#endif
 
 /* precise positioning -------------------------------------------------------*/
 extern void rtkinit(rtk_t *rtk, const prcopt_t *opt);

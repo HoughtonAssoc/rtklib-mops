@@ -208,9 +208,15 @@ static void outsolstat(rtk_t *rtk)
                 rtk->sol.stat,rtk->x[0],rtk->x[1],rtk->x[2],xa[0],xa[1],xa[2]);
     }
     else {
+#ifdef WAAS_STUDY
+        fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
+                rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
+                rtk->pl.hpl,rtk->pl.vpl,0.0);
+#else
         fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
                 rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
                 0.0,0.0,0.0);
+#endif
     }
     /* receiver velocity and acceleration */
     if (est&&rtk->opt.dynamics) {
@@ -1613,6 +1619,9 @@ extern void rtkinit(rtk_t *rtk, const prcopt_t *opt)
     sol_t sol0={{0}};
     ambc_t ambc0={{{0}}};
     ssat_t ssat0={0};
+#ifdef WAAS_STUDY
+    protlevels_t pl0={0};
+#endif
     int i;
     
     trace(3,"rtkinit :\n");
@@ -1633,6 +1642,9 @@ extern void rtkinit(rtk_t *rtk, const prcopt_t *opt)
     }
     for (i=0;i<MAXERRMSG;i++) rtk->errbuf[i]=0;
     rtk->opt=*opt;
+#ifdef WAAS_STUDY
+    rtk->pl = pl0;
+#endif
 }
 /* free rtk control ------------------------------------------------------------
 * free memory for rtk control struct
@@ -1730,8 +1742,13 @@ extern int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     time=rtk->sol.time; /* previous epoch */
     
     /* rover position by single point positioning */
-    if (!pntpos(obs,nu,nav,&rtk->opt,&rtk->sol,NULL,rtk->ssat,msg)) {
+#ifdef WAAS_STUDY
+    if (!pntpos(obs,nu,nav,&rtk->opt,&rtk->sol,NULL,rtk->ssat,&rtk->pl,msg)) {
         errmsg(rtk,"point pos error (%s)\n",msg);
+#else
+	if (!pntpos(obs,nu,nav,&rtk->opt,&rtk->sol,NULL,rtk->ssat,msg)) {
+		errmsg(rtk,"point pos error (%s)\n",msg);
+#endif
         
         if (!rtk->opt.dynamics) {
             outsolstat(rtk);
@@ -1760,7 +1777,11 @@ extern int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     if (opt->mode==PMODE_MOVEB) { /*  moving baseline */
         
         /* estimate position/velocity of base station */
+#ifdef WAAS_STUDY
+        if (!pntpos(obs+nu,nr,nav,&rtk->opt,&solb,NULL,NULL,NULL,msg)) {
+#else
         if (!pntpos(obs+nu,nr,nav,&rtk->opt,&solb,NULL,NULL,msg)) {
+#endif
             errmsg(rtk,"base station position error (%s)\n",msg);
             return 0;
         }

@@ -60,7 +60,11 @@ static void writesol(rtksvr_t *svr, int index)
     
     for (i=0;i<2;i++) {
         /* output solution */
+#ifdef WAAS_STUDY
+        n=outsols(buff,&svr->rtk.sol,svr->rtk.rb,svr->solopt+i,NULL);
+#else
         n=outsols(buff,&svr->rtk.sol,svr->rtk.rb,svr->solopt+i);
+#endif
         strwrite(svr->stream+i+3,buff,n);
         
         /* save output buffer */
@@ -75,7 +79,11 @@ static void writesol(rtksvr_t *svr, int index)
     }
     /* output solution to monitor port */
     if (svr->moni) {
+#ifdef WAAS_STUDY
+        n=outsols(buff,&svr->rtk.sol,svr->rtk.rb,&solopt,NULL);
+#else
         n=outsols(buff,&svr->rtk.sol,svr->rtk.rb,&solopt);
+#endif
         strwrite(svr->moni,buff,n);
     }
     /* save solution buffer */

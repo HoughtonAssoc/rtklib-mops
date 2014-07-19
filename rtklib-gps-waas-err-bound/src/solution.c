@@ -950,8 +950,13 @@ extern int readsolstat(char *files[], int nfile, solstatbuf_t *statbuf)
     return readsolstatt(files,nfile,time,time,0.0,statbuf);
 }
 /* output solution as the form of x/y/z-ecef ---------------------------------*/
+#ifdef WAAS_STUDY
+static int outecef(unsigned char *buff, const char *s, const sol_t *sol,
+                   const solopt_t *opt, const protlevels_t *pl)
+#else
 static int outecef(unsigned char *buff, const char *s, const sol_t *sol,
                    const solopt_t *opt)
+#endif
 {
     const char *sep=opt2sep(opt);
     char *p=(char *)buff;
@@ -962,12 +967,21 @@ static int outecef(unsigned char *buff, const char *s, const sol_t *sol,
                s,sep,sol->rr[0],sep,sol->rr[1],sep,sol->rr[2],sep,sol->stat,sep,
                sol->ns,sep,SQRT(sol->qr[0]),sep,SQRT(sol->qr[1]),sep,SQRT(sol->qr[2]),
                sep,sqvar(sol->qr[3]),sep,sqvar(sol->qr[4]),sep,sqvar(sol->qr[5]),
+#ifdef WAAS_STUDY
+               sep,(pl?pl->hpl:0.),sep,(pl?pl->vpl:0.));
+#else
                sep,sol->age,sep,sol->ratio);
+#endif
     return p-(char *)buff;
 }
 /* output solution as the form of lat/lon/height -----------------------------*/
+#ifdef WAAS_STUDY
+static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
+                  const solopt_t *opt, const protlevels_t *pl)
+#else
 static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
                   const solopt_t *opt)
+#endif
 {
     double pos[3],dms1[3],dms2[3],P[9],Q[9];
     const char *sep=opt2sep(opt);
@@ -992,12 +1006,21 @@ static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
     p+=sprintf(p,"%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
                sep,pos[2],sep,sol->stat,sep,sol->ns,sep,SQRT(Q[4]),sep,
                SQRT(Q[0]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),sep,sqvar(Q[2]),
+#ifdef WAAS_STUDY
+               sep,sqvar(Q[5]),sep,(pl?pl->hpl:0.),sep,(pl?pl->vpl:0.));
+#else
                sep,sqvar(Q[5]),sep,sol->age,sep,sol->ratio);
+#endif
     return p-(char *)buff;
 }
 /* output solution as the form of e/n/u-baseline -----------------------------*/
+#ifdef WAAS_STUDY
+static int outenu(unsigned char *buff, const char *s, const sol_t *sol,
+                  const double *rb, const solopt_t *opt, const protlevels_t *pl)
+#else
 static int outenu(unsigned char *buff, const char *s, const sol_t *sol,
                   const double *rb, const solopt_t *opt)
+#endif
 {
     double pos[3],rr[3],enu[3],P[9],Q[9];
     int i;
@@ -1014,7 +1037,12 @@ static int outenu(unsigned char *buff, const char *s, const sol_t *sol,
     p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
                s,sep,enu[0],sep,enu[1],sep,enu[2],sep,sol->stat,sep,sol->ns,sep,
                SQRT(Q[0]),sep,SQRT(Q[4]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),
+#ifdef WAAS_STUDY
+               sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,(pl?pl->hpl:0.),sep,
+               (pl?pl->vpl:0.));
+#else
                sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,sol->age,sep,sol->ratio);
+#endif
     return p-(char *)buff;
 }
 /* output solution in the form of nmea RMC sentence --------------------------*/
@@ -1355,26 +1383,42 @@ extern int outsolheads(unsigned char *buff, const solopt_t *opt)
             p+=sprintf(p,"%16s%s%16s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                        "latitude(d'\")",sep,"longitude(d'\")",sep,"height(m)",sep,
                        "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+#ifdef WAAS_STUDY
+                       "sdne(m)",sep,"sdeu(m)",sep,"sdue(m)",sep,"hpl (m)",sep,"vpl (m)");
+#else
                        "sdne(m)",sep,"sdeu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
+#endif
         }
         else {
             p+=sprintf(p,"%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                        "latitude(deg)",sep,"longitude(deg)",sep,"height(m)",sep,
                        "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+#ifdef WAAS_STUDY
+                       "sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"hpl (m)",sep,"vpl (m)");
+#else
                        "sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"age(s)",sep,"ratio");
+#endif
         }
     }
     else if (opt->posf==SOLF_XYZ) { /* x/y/z-ecef */
         p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                    "x-ecef(m)",sep,"y-ecef(m)",sep,"z-ecef(m)",sep,"Q",sep,"ns",sep,
                    "sdx(m)",sep,"sdy(m)",sep,"sdz(m)",sep,"sdxy(m)",sep,
+#ifdef WAAS_STUDY
+                   "sdyz(m)",sep,"sdzx(m)",sep,"hpl (m)",sep,"vpl (m)");
+#else
                    "sdyz(m)",sep,"sdzx(m)",sep,"age(s)",sep,"ratio");
+#endif
     }
     else if (opt->posf==SOLF_ENU) { /* e/n/u-baseline */
         p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                    "e-baseline(m)",sep,"n-baseline(m)",sep,"u-baseline(m)",sep,
                    "Q",sep,"ns",sep,"sde(m)",sep,"sdn(m)",sep,"sdu(m)",sep,
+#ifdef WAAS_STUDY
+                   "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"hpl (m)",sep,"vpl (m)");
+#else
                    "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
+#endif
     }
     return p-(char *)buff;
 }
@@ -1386,8 +1430,13 @@ extern int outsolheads(unsigned char *buff, const solopt_t *opt)
 *          solopt_t *opt    I   solution options
 * return : number of output bytes
 *-----------------------------------------------------------------------------*/
+#ifdef WAAS_STUDY
+extern int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
+                   const solopt_t *opt, protlevels_t *pl)
+#else
 extern int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
                    const solopt_t *opt)
+#endif
 {
     gtime_t time,ts={0};
     double gpst;
@@ -1421,9 +1470,15 @@ extern int outsols(unsigned char *buff, const sol_t *sol, const double *rb,
         sprintf(s,"%4d%s%*.*f",week,sep,6+(timeu<=0?0:timeu+1),timeu,gpst);
     }
     switch (opt->posf) {
-        case SOLF_LLH:  p+=outpos (p,s,sol,opt);   break;
-        case SOLF_XYZ:  p+=outecef(p,s,sol,opt);   break;
-        case SOLF_ENU:  p+=outenu(p,s,sol,rb,opt); break;
+#ifdef WAAS_STUDY
+		case SOLF_LLH:  p+=outpos (p,s,sol,opt,pl);   break;
+		case SOLF_XYZ:  p+=outecef(p,s,sol,opt,pl);   break;
+		case SOLF_ENU:  p+=outenu(p,s,sol,rb,opt,pl); break;
+#else
+		case SOLF_LLH:  p+=outpos (p,s,sol,opt);   break;
+		case SOLF_XYZ:  p+=outecef(p,s,sol,opt);   break;
+		case SOLF_ENU:  p+=outenu(p,s,sol,rb,opt); break;
+#endif
         case SOLF_NMEA: p+=outnmea_rmc(p,sol);
                         p+=outnmea_gga(p,sol); break;
     }
@@ -1498,15 +1553,23 @@ extern void outsolhead(FILE *fp, const solopt_t *opt)
 *          solopt_t *opt    I   solution options
 * return : none
 *-----------------------------------------------------------------------------*/
+#ifdef WAAS_STUDY
+extern void outsol(FILE *fp, const sol_t *sol, const double *rb,
+                   const solopt_t *opt, protlevels_t *pl)
+#else
 extern void outsol(FILE *fp, const sol_t *sol, const double *rb,
                    const solopt_t *opt)
+#endif
 {
     unsigned char buff[MAXSOLMSG+1];
     int n;
     
     trace(3,"outsol  :\n");
-    
-    if ((n=outsols(buff,sol,rb,opt))>0) {
+#ifdef WAAS_STUDY
+    if ((n=outsols(buff,sol,rb,opt,pl))>0) {
+#else
+	if ((n=outsols(buff,sol,rb,opt))>0) {
+#endif
         fwrite(buff,n,1,fp);
     }
 }

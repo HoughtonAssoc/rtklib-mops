@@ -834,8 +834,13 @@ static void setapppos(strfile_t *str, rnxopt_t *opt)
     prcopt.navsys=opt->navsys;
     
     /* point positioning with last obs data */
+#ifdef WAAS_STUDY
     if (!pntpos(str->obs->data,str->obs->n,str->nav,&prcopt,&sol,NULL,NULL,
-                msg)) {
+                NULL,msg)) {
+#else
+	if (!pntpos(str->obs->data,str->obs->n,str->nav,&prcopt,&sol,NULL,NULL,
+			msg)) {
+#endif
         trace(2,"point position error (%s)\n",msg);
         return;
     }

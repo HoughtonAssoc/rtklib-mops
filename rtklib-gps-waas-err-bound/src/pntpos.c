@@ -192,15 +192,28 @@ extern int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
     return 1;
 }
 /* pseudorange residuals -----------------------------------------------------*/
+#ifdef WAAS_STUDY
+static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
+                   const double *dts, const double *vare, const int *svh,
+                   const nav_t *nav, const double *x, const prcopt_t *opt,
+                   double *v, double *H, double *var, double *azel, int *vsat,
+                   double *resp, int *nx, protlevels_t *pl)
+#else
 static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                    const double *dts, const double *vare, const int *svh,
                    const nav_t *nav, const double *x, const prcopt_t *opt,
                    double *v, double *H, double *var, double *azel, int *vsat,
                    double *resp, int *nx)
+#endif
 {
     double r,dion,dtrp,vmeas,vion,vtrp,rr[3],pos[3],dtr,e[3],P;
     int i,j,nv=0,ns[2]={0},sys;
     
+#ifdef WAAS_STUDY
+    int* vobs2obs;  /* Valid obs to obs mapping array. */
+    if (opt->waas_study) vobs2obs = imat(0, n);
+#endif
+
     trace(3,"resprng : n=%d\n",n);
     
     *nx=5;
@@ -251,6 +264,9 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
         else              {             H[4+nv*5]=0.0; ns[0]++;}
         
         vsat[i]=1; resp[i]=v[nv];
+#ifdef WAAS_STUDY
+        if (opt->waas_study) vobs2obs[nv] = i;
+#endif
         
         /* error variance */
         var[nv++]=varerr(opt,azel[1+i*2],sys)+vare[i]+vmeas+vion+vtrp;
@@ -258,6 +274,15 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
         trace(4,"sat=%2d azel=%5.1f %4.1f res=%7.3f sig=%5.3f\n",obs[i].sat,
               azel[i*2]*R2D,azel[1+i*2]*R2D,resp[i],sqrt(var[nv-1]));
     }
+
+#ifdef WAAS_STUDY
+    /* Calculate WAAS protection levels. */
+    if (opt->waas_study) {
+    	waasprotlevels(azel, nv, vobs2obs, var, pl);
+        free(vobs2obs);
+    }
+#endif
+
     /* shrink design matrix: nx=5->4 */
     if (!ns[0]||!ns[1]) {
         for (i=0;i<nv;i++) for (j=0;j<4;j++) H[j+i*4]=H[j+i*5];
@@ -296,10 +321,17 @@ static int valsol(const double *azel, const int *vsat, int n,
     return 1;
 }
 /* estimate receiver position ------------------------------------------------*/
+#ifdef WAAS_STUDY
+static int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
+                  const double *vare, const int *svh, const nav_t *nav,
+                  const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
+                  double *resp, protlevels_t *pl, char *msg)
+#else
 static int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                   const double *vare, const int *svh, const nav_t *nav,
                   const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
                   double *resp, char *msg)
+#endif
 {
     double x[5]={0},dx[5],Q[25],*v,*H,*var,sig;
     int i,j,k,info,stat,nx,nv;
@@ -313,7 +345,12 @@ static int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     for (i=0;i<MAXITR;i++) {
         
         /* pseudorange residuals */
+#ifdef WAAS_STUDY
+        nv=rescode(i,obs,n,rs,dts,vare,svh,nav,x,opt,v,H,var,azel,vsat,resp,&nx,
+        		pl);
+#else
         nv=rescode(i,obs,n,rs,dts,vare,svh,nav,x,opt,v,H,var,azel,vsat,resp,&nx);
+#endif
         
         if (nv<nx) {
             sprintf(msg,"lack of valid sats ns=%d",nv);
@@ -390,11 +427,19 @@ static int raim_fde(const obsd_t *obs, int n, const double *rs,
             svh_e[k++]=svh[j];
         }
         /* estimate receiver position without a satellite */
+#ifdef WAAS_STUDY
+        if (!estpos(obs_e,n-1,rs_e,dts_e,vare_e,svh_e,nav,opt,&sol_e,azel_e,
+                    vsat_e,resp_e,NULL,msg_e)) {
+            trace(3,"raim_fde: exsat=%2d (%s)\n",obs[i].sat,msg);
+            continue;
+        }
+#else
         if (!estpos(obs_e,n-1,rs_e,dts_e,vare_e,svh_e,nav,opt,&sol_e,azel_e,
                     vsat_e,resp_e,msg_e)) {
             trace(3,"raim_fde: exsat=%2d (%s)\n",obs[i].sat,msg);
             continue;
         }
+#endif
         for (j=nvsat=0,rms_e=0.0;j<n-1;j++) {
             if (!vsat_e[j]) continue;
             rms_e+=SQR(resp_e[j]);
@@ -523,9 +568,15 @@ static void estvel(const obsd_t *obs, int n, const double *rs, const double *dts
 *          receiver bias are negligible (only involving glonass-gps time offset
 *          and receiver bias)
 *-----------------------------------------------------------------------------*/
+#ifdef WAAS_STUDY
+extern int pntpos(const obsd_t *obs, int n, const nav_t *nav,
+                  const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
+                  protlevels_t *pl, char *msg)
+#else
 extern int pntpos(const obsd_t *obs, int n, const nav_t *nav,
                   const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
                   char *msg)
+#endif
 {
     prcopt_t opt_=*opt;
     double *rs,*dts,*var,*azel_,*resp;
@@ -552,7 +603,11 @@ extern int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     satposs(sol->time,obs,n,nav,opt_.sateph,rs,dts,var,svh);
     
     /* estimate receiver position with pseudorange */
+#ifdef WAAS_STUDY
+    stat=estpos(obs,n,rs,dts,var,svh,nav,&opt_,sol,azel_,vsat,resp,pl,msg);
+#else
     stat=estpos(obs,n,rs,dts,var,svh,nav,&opt_,sol,azel_,vsat,resp,msg);
+#endif
     
     /* raim fde */
     if (!stat&&n>=6&&opt->posopt[4]) {

@@ -914,3 +914,85 @@ extern int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
     
     return crc24q(f,29)==(words[7]&0xFFFFFF); /* check crc */
 }
+
+#ifdef WAAS_STUDY
+
+#define EAST 0
+#define NORTH 1
+#define UP 2
+#define TIME 3
+#define ARR(i,j) ((i)+4*(j))
+
+/**
+* Compute the WAAS protections levels as defined in Appendix J of the WAAS MOPS.
+* (RTCA DO-229D, Minimum operational performance standards for global
+* positioning system/wide area augmentation system airborne equipment,
+* RTCA inc, December 13, 2006)
+*
+* args   : double* azel      I array of satellite azimuth/elevation angles (rad)
+*          int     nv        I number of valid observations
+*          int*    vobs2obs  I mapping of valid obs index to all obs index
+*          double* var       I array of pseudorange variances (meter^2)
+*          protlevels_t* pl  O pointer to protection level struct
+* return : status (0:ok,1:singular matrix error)
+*/
+extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
+		protlevels_t *pl) {
+
+    double ce, se, ca, sa, az, el;
+	int i, j, ii, jj;
+	double d2east, d2north, d2en, dmajor;
+	static double* d = zeros(4,4);
+	static double* g = mat(1,4);
+
+    trace(4,"waasprotlevels: nv=%d azel=%.3f %.3f vobs2obs=%d %d"
+    		"var=%.3f %.3f\n",
+    		nv,azel[0]*R2D,azel[1]*R2D,vobs2obs[0],vobs2obs[1],
+    		var[0], var[1]);
+
+    /* Check for NULL pointers.  */
+    if (!pl || !azel || !vobs2obs || !var) {
+    	trace(5,"protection levels not calculated due to null pointer\n");
+    	return 2;
+    }
+
+	/* Calculate D matrix. */
+	for (i = 0; i < nv; i++) {
+		j = 2 * vobs2obs(i);
+		az = azel[j];
+		el = azel[j+1];
+		ce = cos(el);
+		se = sin(el);
+		ca = cos(az);
+		sa = sin(az);
+		g[EAST] = -ce * sa;
+		g[NORTH] = -ce * ca;
+		g[UP] = -se;
+		g[TIME] = 1;
+		for (int ii = 0; ii < 4; ii++)
+			for (int jj = 0; jj < 4; jj++)
+				d[ARR(ii,jj)] += g[ii] * g[jj] / var(i);
+	}
+	trace(5, "inverse D matrix = "); tracemat(5,d,4,4,13,6);
+	if (matinv(d,4)) {
+        trace(1,"waasprotlevels: Singular matrix.\n");
+        pl->hpl = 0.;
+        pl-vpl = 0.;
+        return 1;
+	}
+	trace(5, "D matrix = "); tracemat(5,d,4,4,13,6);
+
+	/* Calculate dmajor. */
+	d2east = d[ARR(EAST,EAST)];
+	d2north = d[ARR(NORTH,NORTH)];
+	d2en = SQR(d[ARR(EAST,NORTH)]);
+	dmajor = sqrt((d2east+d2north)/2.+ sqrt(SQR((d2east-d2north)/2.)+d2en));
+
+	/* Calculate protection levels. */
+	pl->hpl = 6.00 * dmajor;
+	pl->vpl = 5.33 * sqrt(d[ARR(UP,UP)]);
+
+	return 0;
+}
+#endif
+
