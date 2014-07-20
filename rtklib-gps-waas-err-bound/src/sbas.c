@@ -43,6 +43,10 @@ static const char rcsid[]="$Id: sbas.c,v 1.1 2008/07/17 21:48:06 ttaka Exp $";
 
 #define WEEKOFFSET  1024        /* gps week offset for NovAtel OEM-3 */
 
+#ifdef WAAS_STUDY
+extern int waas_study;
+#endif
+
 /* sbas igp definition -------------------------------------------------------*/
 static const short
 x1[]={-75,-65,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,- 5,  0,  5, 10, 15, 20,
@@ -715,7 +719,11 @@ extern int sbsioncorr(gtime_t time, const nav_t *nav, const double *pos,
         t=timediff(time,igp[i]->t0);
         *delay+=w[i]*igp[i]->delay;
 #ifdef WAAS_STUDY
-        *var+=w[i]*varicorr(igp[i]->give);				/* updated by ACR 23-Jun-14 */
+        if (waas_study) {
+        	*var+=w[i]*varicorr(igp[i]->give);			/* updated by ACR 23-Jun-14 */
+        } else {
+            *var+=w[i]*varicorr(igp[i]->give)*9E-8*fabs(t);
+        }
 #else
         *var+=w[i]*varicorr(igp[i]->give)*9E-8*fabs(t);
 #endif
@@ -838,7 +846,11 @@ static int sbsfastcorr(gtime_t time, int sat, const sbssat_t *sbssat,
         }
 #endif
 #ifdef WAAS_STUDY
-        *var=varfcorr(p->fcorr.udre);	/* 26-Jun-14 ACR */
+        if (waas_study) {
+        	*var=varfcorr(p->fcorr.udre);	/* 26-Jun-14 ACR */
+        } else {
+            *var=varfcorr(p->fcorr.udre)+degfcorr(p->fcorr.ai)*t*t/2.0;
+        }
 #else
         *var=varfcorr(p->fcorr.udre)+degfcorr(p->fcorr.ai)*t*t/2.0;	
 #endif
@@ -929,7 +941,8 @@ extern int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
 #define NORTH 1
 #define UP 2
 #define TIME 3
-#define ARR(i,j) ((i)+4*(j))
+#define A4(i,j) ((i)+4*(j))
+#define SQR(x)   ((x)*(x))
 
 /**
 * Compute the WAAS protections levels as defined in Appendix J of the WAAS MOPS.
@@ -941,7 +954,7 @@ extern int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
 *          int     nv        I number of valid observations
 *          int*    vobs2obs  I mapping of valid obs index to all obs index
 *          double* var       I array of pseudorange variances (meter^2)
-*          protlevels_t* pl  O pointer to protection level struct
+*          protlevels_t* pl  O pointer to protection level struct (meter)
 * return : status (0:ok,1:singular matrix error)
 */
 extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
@@ -950,8 +963,7 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
     double ce, se, ca, sa, az, el;
 	int i, j, ii, jj;
 	double d2east, d2north, d2en, dmajor;
-	static double* d = zeros(4,4);
-	static double* g = mat(1,4);
+	double *d, *g;
 
     trace(4,"waasprotlevels: nv=%d azel=%.3f %.3f vobs2obs=%d %d"
     		"var=%.3f %.3f\n",
@@ -960,13 +972,24 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 
     /* Check for NULL pointers.  */
     if (!pl || !azel || !vobs2obs || !var) {
-    	trace(5,"protection levels not calculated due to null pointer\n");
+    	trace(4,"waasprotlevels: protection levels not calculated due to null pointer\n");
     	return 2;
     }
 
+    trace(5,"waasprotlevels: vobs2obs = "); traceimat(5,vobs2obs,1,nv,4);
+    trace(5,"waasprotlevels: var = "); tracemat(5,var,1,nv,9,6);
+
+	d = zeros(4,4);
+	g = mat(1,4);
+
 	/* Calculate D matrix. */
+	trace(5,"waasprotlevels: valid sat azimuths and elevations (deg):\n");
 	for (i = 0; i < nv; i++) {
-		j = 2 * vobs2obs(i);
+		j = 2 * vobs2obs[i];
+#ifdef TRACE
+		trace(5, "isat = % 3i az = % 9.6f el = % 9.6f\n",
+				i, azel[j]*R2D, azel[j+1]*R2D);
+#endif
 		az = azel[j];
 		el = azel[j+1];
 		ce = cos(el);
@@ -977,29 +1000,32 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 		g[NORTH] = -ce * ca;
 		g[UP] = -se;
 		g[TIME] = 1;
-		for (int ii = 0; ii < 4; ii++)
-			for (int jj = 0; jj < 4; jj++)
-				d[ARR(ii,jj)] += g[ii] * g[jj] / var(i);
+		for (ii = 0; ii < 4; ii++)
+			for (jj = 0; jj < 4; jj++)
+				d[A4(ii,jj)] += g[ii] * g[jj] / var[i];
 	}
-	trace(5, "inverse D matrix = "); tracemat(5,d,4,4,13,6);
+	trace(5, "waasprotlevels: inverse D matrix = \n"); tracemat(5,d,4,4,13,6);
 	if (matinv(d,4)) {
         trace(1,"waasprotlevels: Singular matrix.\n");
         pl->hpl = 0.;
-        pl-vpl = 0.;
+        pl->vpl = 0.;
+    	free(d); free(g);
         return 1;
 	}
-	trace(5, "D matrix = "); tracemat(5,d,4,4,13,6);
+	trace(5, "waasprotlevels: D matrix = \n"); tracemat(5,d,4,4,13,6);
 
 	/* Calculate dmajor. */
-	d2east = d[ARR(EAST,EAST)];
-	d2north = d[ARR(NORTH,NORTH)];
-	d2en = SQR(d[ARR(EAST,NORTH)]);
+	d2east = d[A4(EAST,EAST)];
+	d2north = d[A4(NORTH,NORTH)];
+	d2en = SQR(d[A4(EAST,NORTH)]);
 	dmajor = sqrt((d2east+d2north)/2.+ sqrt(SQR((d2east-d2north)/2.)+d2en));
 
-	/* Calculate protection levels. */
+	/* Calculate protection levels in meters. */
 	pl->hpl = 6.00 * dmajor;
-	pl->vpl = 5.33 * sqrt(d[ARR(UP,UP)]);
+	pl->vpl = 5.33 * sqrt(d[A4(UP,UP)]);
+    trace(4,"waasprotlevels: hpl=%.3f vpl=%.3f\n", pl->hpl, pl->vpl);
 
+	free(d); free(g);
 	return 0;
 }
 #endif

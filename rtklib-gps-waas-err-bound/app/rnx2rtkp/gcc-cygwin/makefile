@@ -3,28 +3,12 @@
 BINDIR  = /usr/local/bin
 SRC     = ../../../src
 
-OPTS    = -DTRACE -DENAGLO -DENAQZS -DENAGAL -DNFREQ=3 -DWIN32
+OPTIM     = -O3
+MOREOPTS  = -DWAAS_STUDY -DTRACE
+OPTS      = -DENAGLO -DENAQZS -DENAGAL -DNFREQ=3 -DWIN32 $(MOREOPTS)
 
-# without lapack, with debugging, and without optimization
-CFLAGS  = -Wall -ggdb -O0 -ansi -pedantic -I/usr/include -I$(SRC) $(OPTS)
-LDLIBS  = -ggdb -O0 -lm -lrt -lwinmm -L/usr/lib -L/usr/lib/w32api
-
-# without lapack, without debugging, and with optimization
-#CFLAGS  = -Wall -O3 -ansi -pedantic -I/usr/include -I$(SRC) $(OPTS)
-#LDLIBS  = -lm -lrt -lwinmm -L/usr/lib -L/usr/lib/w32api
-
-# with lapack, without debugging, and with optimization
-#CFLAGS  = -Wall -O3 -ansi -pedantic -I$(SRC) -DLAPACK $(OPTS)
-#LDLIBS  = -lm -lrt -llapack -lblas
-
-# for gprof
-#CFLAGS  = -Wall -O3 -ansi -pedantic -I$(SRC) -DLAPACK $(OPTS) -pg
-#LDLIBS  = -lm -lrt -llapack -lblas -pg
-
-# for mkl
-#MKLDIR  = /opt/intel
-#CFLAGS  = -O3 -ansi -pedantic -I$(SRC) $(OPTS) -DMKL -I$(MKLDIR)/include
-#LDLIBS  = -L$(MKLDIR)/lib/32 -lm -lmkl_core -lmkl_intel -lmkl_gnu_thread -liomp5 -lpthread
+CFLAGS  = -Wall $(OPTIM) -ansi -pedantic -I/usr/include -I$(SRC) $(OPTS)
+LDLIBS  = $(OPTIM) -lm -lrt -lwinmm -L/usr/lib -L/usr/lib/w32api
 
 all        : rnx2rtkp
 rnx2rtkp   : rnx2rtkp.o rtkcmn.o rinex.o rtkpos.o postpos.o solution.o
@@ -96,17 +80,18 @@ rtcm3e.o   : $(SRC)/rtklib.h makefile
 ionex.o    : $(SRC)/rtklib.h makefile
 qzslex.o    : $(SRC)/rtklib.h makefile
 
-CMD1    = ./rnx2rtkp
+CMD1    = ./rnx2rtkp -ws
 INPUT11 = ../../../test/data/rinex/07590920.05o ../../../test/data/rinex/30400920.05n
 INPUT12 = ../../../test/data/rinex/30400920.05o
 OPTS1   = -r -3978241.958 3382840.234 3649900.853
 USLO3610INPUT = Uslo3610.06O Uslo3610.06N
+test : rnx2rtkp
 test : test1 test2 test3 test4 test5 test6 test7 test8 test9 test10
 test : test11 test12 test13 test14 test15 test16 test17 test18 test19 test20
 test : test21 test22 test23 test24 test25 test26 test27 test28
 
 test1 :
-	$(CMD1) $(INPUT11) -x 5 -o test1.pos
+	./runtest.sh "$(CMD1) $(INPUT11) -x 5 $(OPTS1) -o test1.pos" test1
 test2 :
 	./runtest.sh "$(CMD1) -t -e $(OPTS1) $(INPUT11)" test2 > test2.pos
 test3 :
@@ -161,6 +146,15 @@ test27 :
 	./runtest.sh "$(CMD1) -k SBMB.conf $(USLO3610INPUT) -o test27.pos" test27
 test28 :
 	./runtest.sh "$(CMD1) -k SSSS_RAIM.conf $(USLO3610INPUT) Geo135_00b4_1407_03.sbs -o test28.pos" test28
+	
+trace_output : test26_trace_output test27_trace_output test28_trace_output
+
+test26_trace_output : rnx2rtkp
+	$(CMD1) -x 5 -k SSSS.conf Uslo3610.06O-small Uslo3610.06N Geo135_00b4_1407_03.sbs -o test26_trace_output.pos
+test27_trace_output : rnx2rtkp
+	$(CMD1) -x 5 -k SBMB.conf Uslo3610.06O-small Uslo3610.06N -o test27_trace_output.pos
+test28_trace_output : rnx2rtkp
+	$(CMD1) -x 5 -k SSSS_RAIM.conf Uslo3610.06O-small Uslo3610.06N Geo135_00b4_1407_03.sbs -o test28_trace_output.pos
 
 clean :
 	rm -f rnx2rtkp rnx2rtkp.exe *.o *.pos *.trace *.stat

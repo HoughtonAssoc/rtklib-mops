@@ -40,6 +40,10 @@
 #include <ctype.h>
 #include "rtklib.h"
 
+#ifdef WAAS_STUDY
+extern int waas_study;
+#endif
+
 static const char rcsid[]="$Id: solution.c,v 1.1 2008/07/17 21:48:06 ttaka Exp $";
 
 /* constants and macros ------------------------------------------------------*/
@@ -963,13 +967,25 @@ static int outecef(unsigned char *buff, const char *s, const sol_t *sol,
     
     trace(3,"outecef:\n");
     
+#ifdef WAAS_STUDY
+    if (waas_study) {
+		p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+				   s,sep,sol->rr[0],sep,sol->rr[1],sep,sol->rr[2],sep,sol->stat,sep,
+				   sol->ns,sep,SQRT(sol->qr[0]),sep,SQRT(sol->qr[1]),sep,SQRT(sol->qr[2]),
+				   sep,sqvar(sol->qr[3]),sep,sqvar(sol->qr[4]),sep,sqvar(sol->qr[5]),
+				   sep,(pl?pl->hpl:0.),sep,(pl?pl->vpl:0.));
+    } else {
+        p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+                   s,sep,sol->rr[0],sep,sol->rr[1],sep,sol->rr[2],sep,sol->stat,sep,
+                   sol->ns,sep,SQRT(sol->qr[0]),sep,SQRT(sol->qr[1]),sep,SQRT(sol->qr[2]),
+                   sep,sqvar(sol->qr[3]),sep,sqvar(sol->qr[4]),sep,sqvar(sol->qr[5]),
+                   sep,sol->age,sep,sol->ratio);
+    }
+#else
     p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
                s,sep,sol->rr[0],sep,sol->rr[1],sep,sol->rr[2],sep,sol->stat,sep,
                sol->ns,sep,SQRT(sol->qr[0]),sep,SQRT(sol->qr[1]),sep,SQRT(sol->qr[2]),
                sep,sqvar(sol->qr[3]),sep,sqvar(sol->qr[4]),sep,sqvar(sol->qr[5]),
-#ifdef WAAS_STUDY
-               sep,(pl?pl->hpl:0.),sep,(pl?pl->vpl:0.));
-#else
                sep,sol->age,sep,sol->ratio);
 #endif
     return p-(char *)buff;
@@ -1003,12 +1019,22 @@ static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
                    dms2[2]);
     }
     else p+=sprintf(p,"%s%s%14.9f%s%14.9f",s,sep,pos[0]*R2D,sep,pos[1]*R2D);
+#ifdef WAAS_STUDY
+    if (waas_study) {
+		p+=sprintf(p,"%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+				   sep,pos[2],sep,sol->stat,sep,sol->ns,sep,SQRT(Q[4]),sep,
+				   SQRT(Q[0]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),sep,sqvar(Q[2]),
+				   sep,sqvar(Q[5]),sep,(pl?pl->hpl:0.),sep,(pl?pl->vpl:0.));
+    } else {
+        p+=sprintf(p,"%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+                   sep,pos[2],sep,sol->stat,sep,sol->ns,sep,SQRT(Q[4]),sep,
+                   SQRT(Q[0]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),sep,sqvar(Q[2]),
+                   sep,sqvar(Q[5]),sep,sol->age,sep,sol->ratio);
+    }
+#else
     p+=sprintf(p,"%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
                sep,pos[2],sep,sol->stat,sep,sol->ns,sep,SQRT(Q[4]),sep,
                SQRT(Q[0]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),sep,sqvar(Q[2]),
-#ifdef WAAS_STUDY
-               sep,sqvar(Q[5]),sep,(pl?pl->hpl:0.),sep,(pl?pl->vpl:0.));
-#else
                sep,sqvar(Q[5]),sep,sol->age,sep,sol->ratio);
 #endif
     return p-(char *)buff;
@@ -1034,13 +1060,23 @@ static int outenu(unsigned char *buff, const char *s, const sol_t *sol,
     soltocov(sol,P);
     covenu(pos,P,Q);
     ecef2enu(pos,rr,enu);
+#ifdef WAAS_STUDY
+    if (waas_study) {
+		p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+				   s,sep,enu[0],sep,enu[1],sep,enu[2],sep,sol->stat,sep,sol->ns,sep,
+				   SQRT(Q[0]),sep,SQRT(Q[4]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),
+				   sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,(pl?pl->hpl:0.),sep,
+				   (pl?pl->vpl:0.));
+    } else {
+        p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+                   s,sep,enu[0],sep,enu[1],sep,enu[2],sep,sol->stat,sep,sol->ns,sep,
+                   SQRT(Q[0]),sep,SQRT(Q[4]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),
+                   sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,sol->age,sep,sol->ratio);
+    }
+#else
     p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
                s,sep,enu[0],sep,enu[1],sep,enu[2],sep,sol->stat,sep,sol->ns,sep,
                SQRT(Q[0]),sep,SQRT(Q[4]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),
-#ifdef WAAS_STUDY
-               sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,(pl?pl->hpl:0.),sep,
-               (pl?pl->vpl:0.));
-#else
                sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,sol->age,sep,sol->ratio);
 #endif
     return p-(char *)buff;
@@ -1380,43 +1416,83 @@ extern int outsolheads(unsigned char *buff, const solopt_t *opt)
     
     if (opt->posf==SOLF_LLH) { /* lat/lon/hgt */
         if (opt->degf) {
+#ifdef WAAS_STUDY
+        	if (waas_study) {
+				p+=sprintf(p,"%16s%s%16s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+						   "latitude(d'\")",sep,"longitude(d'\")",sep,"height(m)",sep,
+						   "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+						   "sdne(m)",sep,"sdeu(m)",sep,"sdue(m)",sep,"hpl (m)",sep,"vpl (m)");
+        	} else {
+                p+=sprintf(p,"%16s%s%16s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+                           "latitude(d'\")",sep,"longitude(d'\")",sep,"height(m)",sep,
+                           "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+                           "sdne(m)",sep,"sdeu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
+        	}
+#else
             p+=sprintf(p,"%16s%s%16s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                        "latitude(d'\")",sep,"longitude(d'\")",sep,"height(m)",sep,
                        "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
-#ifdef WAAS_STUDY
-                       "sdne(m)",sep,"sdeu(m)",sep,"sdue(m)",sep,"hpl (m)",sep,"vpl (m)");
-#else
                        "sdne(m)",sep,"sdeu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
 #endif
         }
         else {
-            p+=sprintf(p,"%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
-                       "latitude(deg)",sep,"longitude(deg)",sep,"height(m)",sep,
-                       "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
 #ifdef WAAS_STUDY
-                       "sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"hpl (m)",sep,"vpl (m)");
+        	if (waas_study) {
+				p+=sprintf(p,"%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+						  "latitude(deg)",sep,"longitude(deg)",sep,"height(m)",sep,
+						  "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+				"sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"hpl (m)",sep,"vpl (m)");
+        	} else {
+                p+=sprintf(p,"%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+                           "latitude(deg)",sep,"longitude(deg)",sep,"height(m)",sep,
+                           "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+                "sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"age(s)",sep,"ratio");
+        	}
 #else
-                       "sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"age(s)",sep,"ratio");
+		   p+=sprintf(p,"%14s%s%14s%s%10s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+					  "latitude(deg)",sep,"longitude(deg)",sep,"height(m)",sep,
+					  "Q",sep,"ns",sep,"sdn(m)",sep,"sde(m)",sep,"sdu(m)",sep,
+		   "sdne(m)",sep,"sdeu(m)",sep,"sdun(m)",sep,"age(s)",sep,"ratio");
 #endif
         }
     }
     else if (opt->posf==SOLF_XYZ) { /* x/y/z-ecef */
+#ifdef WAAS_STUDY
+    	if (waas_study) {
+			p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+					   "x-ecef(m)",sep,"y-ecef(m)",sep,"z-ecef(m)",sep,"Q",sep,"ns",sep,
+					   "sdx(m)",sep,"sdy(m)",sep,"sdz(m)",sep,"sdxy(m)",sep,
+					   "sdyz(m)",sep,"sdzx(m)",sep,"hpl (m)",sep,"vpl (m)");
+    	} else {
+            p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+                       "x-ecef(m)",sep,"y-ecef(m)",sep,"z-ecef(m)",sep,"Q",sep,"ns",sep,
+                       "sdx(m)",sep,"sdy(m)",sep,"sdz(m)",sep,"sdxy(m)",sep,
+                       "sdyz(m)",sep,"sdzx(m)",sep,"age(s)",sep,"ratio");
+    	}
+#else
         p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                    "x-ecef(m)",sep,"y-ecef(m)",sep,"z-ecef(m)",sep,"Q",sep,"ns",sep,
                    "sdx(m)",sep,"sdy(m)",sep,"sdz(m)",sep,"sdxy(m)",sep,
-#ifdef WAAS_STUDY
-                   "sdyz(m)",sep,"sdzx(m)",sep,"hpl (m)",sep,"vpl (m)");
-#else
                    "sdyz(m)",sep,"sdzx(m)",sep,"age(s)",sep,"ratio");
 #endif
     }
     else if (opt->posf==SOLF_ENU) { /* e/n/u-baseline */
+#ifdef WAAS_STUDY
+    	if (waas_study) {
+			p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+					   "e-baseline(m)",sep,"n-baseline(m)",sep,"u-baseline(m)",sep,
+					   "Q",sep,"ns",sep,"sde(m)",sep,"sdn(m)",sep,"sdu(m)",sep,
+					   "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"hpl (m)",sep,"vpl (m)");
+    	} else {
+            p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
+                       "e-baseline(m)",sep,"n-baseline(m)",sep,"u-baseline(m)",sep,
+                       "Q",sep,"ns",sep,"sde(m)",sep,"sdn(m)",sep,"sdu(m)",sep,
+                       "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
+    	}
+#else
         p+=sprintf(p,"%14s%s%14s%s%14s%s%3s%s%3s%s%8s%s%8s%s%8s%s%8s%s%8s%s%8s%s%6s%s%6s\n",
                    "e-baseline(m)",sep,"n-baseline(m)",sep,"u-baseline(m)",sep,
                    "Q",sep,"ns",sep,"sde(m)",sep,"sdn(m)",sep,"sdu(m)",sep,
-#ifdef WAAS_STUDY
-                   "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"hpl (m)",sep,"vpl (m)");
-#else
                    "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
 #endif
     }

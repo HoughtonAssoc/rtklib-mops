@@ -16,6 +16,11 @@
 #include <stdarg.h>
 #include "rtklib.h"
 
+#ifdef WAAS_STUDY
+/* if = 1, HAI WAAS study code is switched in. */
+int waas_study = 0;
+#endif
+
 static const char rcsid[]="$Id: rnx2rtkp.c,v 1.1 2008/07/17 21:55:16 ttaka Exp $";
 
 #define PROGNAME    "rnx2rtkp"          /* program name */
@@ -154,7 +159,7 @@ int main(int argc, char **argv)
         else if (!strcmp(argv[i],"-y")&&i+1<argc) solopt.sstat=atoi(argv[++i]);
         else if (!strcmp(argv[i],"-x")&&i+1<argc) solopt.trace=atoi(argv[++i]);
 #ifdef WAAS_STUDY
-        else if (!strcmp(argv[i],"-ws")) prcopt.waas_study=1;
+        else if (!strcmp(argv[i],"-ws")) waas_study=1;
 #endif
         else if (*argv[i]=='-') printhelp();
         else if (n<MAXFILE) infile[n++]=argv[i];

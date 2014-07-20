@@ -31,6 +31,10 @@
 #include <stdarg.h>
 #include "rtklib.h"
 
+#ifdef WAAS_STUDY
+extern int waas_study;
+#endif
+
 static const char rcsid[]="$Id:$";
 
 /* constants/macros ----------------------------------------------------------*/
@@ -209,9 +213,15 @@ static void outsolstat(rtk_t *rtk)
     }
     else {
 #ifdef WAAS_STUDY
-        fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
-                rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
-                rtk->pl.hpl,rtk->pl.vpl,0.0);
+    	if (waas_study) {
+			fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
+					rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
+					rtk->pl.hpl,rtk->pl.vpl,0.0);
+    	} else {
+            fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
+                    rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
+                    0.0,0.0,0.0);
+    	}
 #else
         fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
                 rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
@@ -1643,7 +1653,9 @@ extern void rtkinit(rtk_t *rtk, const prcopt_t *opt)
     for (i=0;i<MAXERRMSG;i++) rtk->errbuf[i]=0;
     rtk->opt=*opt;
 #ifdef WAAS_STUDY
-    rtk->pl = pl0;
+	if (waas_study) {
+		rtk->pl = pl0;
+	}
 #endif
 }
 /* free rtk control ------------------------------------------------------------

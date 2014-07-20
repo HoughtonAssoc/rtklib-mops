@@ -1120,6 +1120,28 @@ extern void matfprint(const double A[], int n, int m, int p, int q, FILE *fp)
         fprintf(fp,"\n");
     }
 }
+
+#ifdef WAAS_STUDY
+/* print integer matrix ----------------------------------------------------------------
+* print integer matrix to file
+* args   : integer *A       I   matrix A (n x m)
+*          int    n,m       I   number of rows and columns of A
+*          int    p         I   total columns,
+*          FILE  *fp        I   output file pointer)
+* return : none
+* notes  : matrix stored by column-major order (fortran convention)
+*-----------------------------------------------------------------------------*/
+extern void imatfprint(const int A[], int n, int m, int p, FILE *fp)
+{
+    int i,j;
+
+    for (i=0;i<n;i++) {
+        for (j=0;j<m;j++) fprintf(fp," %*i",p,A[i+j*n]);
+        fprintf(fp,"\n");
+    }
+}
+#endif
+
 extern void matprint(const double A[], int n, int m, int p, int q)
 {
     matfprint(A,n,m,p,q,stdout);
@@ -2669,6 +2691,13 @@ extern void tracemat(int level, const double *A, int n, int m, int p, int q)
     if (!fp_trace||level>level_trace) return;
     matfprint(A,n,m,p,q,fp_trace); fflush(fp_trace);
 }
+#ifdef WAAS_STUDY
+extern void traceimat(int level, const int *A, int n, int m, int p)
+{
+    if (!fp_trace||level>level_trace) return;
+    imatfprint(A,n,m,p,fp_trace); fflush(fp_trace);
+}
+#endif
 extern void traceobs(int level, const obsd_t *obs, int n)
 {
     char str[64],id[16];
@@ -2784,6 +2813,9 @@ extern void tracelevel(int level) {}
 extern void trace   (int level, const char *format, ...) {}
 extern void tracet  (int level, const char *format, ...) {}
 extern void tracemat(int level, const double *A, int n, int m, int p, int q) {}
+#ifdef WAAS_STUDY
+extern void traceimat(int level, const int *A, int n, int m, int p) {}
+#endif
 extern void traceobs(int level, const obsd_t *obs, int n) {}
 extern void tracenav(int level, const nav_t *nav) {}
 extern void tracegnav(int level, const nav_t *nav) {}

@@ -954,9 +954,6 @@ typedef struct {        /* processing options type */
     int refpos;         /* base position for relative mode */
                         /* (0:pos in prcopt,  1:average of single pos, */
                         /*  2:read from file, 3:rinex header, 4:rtcm pos) */
-#ifdef WAAS_STUDY
-    int waas_study;     /* if = 1, HAI WAAS study code is switched in. */
-#endif
     double eratio[NFREQ]; /* code/phase error ratio */
     double err[5];      /* measurement error factor */
                         /* [0]:reserved */
@@ -1333,6 +1330,9 @@ extern void tracelevel(int level);
 extern void trace    (int level, const char *format, ...);
 extern void tracet   (int level, const char *format, ...);
 extern void tracemat (int level, const double *A, int n, int m, int p, int q);
+#ifdef WAAS_STUDY
+extern void traceimat (int level, const int *A, int n, int m, int p);
+#endif
 extern void traceobs (int level, const obsd_t *obs, int n);
 extern void tracenav (int level, const nav_t *nav);
 extern void tracegnav(int level, const nav_t *nav);
@@ -1532,14 +1532,24 @@ extern int inputsol(unsigned char data, gtime_t ts, gtime_t te, double tint,
 
 extern int outprcopts(unsigned char *buff, const prcopt_t *opt);
 extern int outsolheads(unsigned char *buff, const solopt_t *opt);
+#ifdef WAAS_STUDY
+extern int outsols  (unsigned char *buff, const sol_t *sol, const double *rb,
+                     const solopt_t *opt, protlevels_t *pl);
+#else
 extern int outsols  (unsigned char *buff, const sol_t *sol, const double *rb,
                      const solopt_t *opt);
+#endif
 extern int outsolexs(unsigned char *buff, const sol_t *sol, const ssat_t *ssat,
                      const solopt_t *opt);
 extern void outprcopt(FILE *fp, const prcopt_t *opt);
 extern void outsolhead(FILE *fp, const solopt_t *opt);
+#ifdef WAAS_STUDY
+extern void outsol  (FILE *fp, const sol_t *sol, const double *rb,
+                     const solopt_t *opt, protlevels_t *pl);
+#else
 extern void outsol  (FILE *fp, const sol_t *sol, const double *rb,
                      const solopt_t *opt);
+#endif
 extern void outsolex(FILE *fp, const sol_t *sol, const ssat_t *ssat,
                      const solopt_t *opt);
 extern int outnmea_rmc(unsigned char *buff, const sol_t *sol);
