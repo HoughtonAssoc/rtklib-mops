@@ -71,6 +71,9 @@ static const char *help[]={
 " -l lat lon hgt reference (base) receiver latitude/longitude/height (deg/m)",
 " -y level  output soltion status (0:off,1:states,2:residuals) [0]",
 " -x level  debug trace level (0:off) [0]"
+#ifdef WAAS_STUDY
+," -ws       switch in WAAS study code [switched out]"
+#endif
 };
 /* show message --------------------------------------------------------------*/
 extern int showmsg(char *format, ...)
