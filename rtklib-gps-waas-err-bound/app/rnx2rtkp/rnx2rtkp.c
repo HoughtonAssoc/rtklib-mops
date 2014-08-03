@@ -17,8 +17,11 @@
 #include "rtklib.h"
 
 #ifdef WAAS_STUDY
-/* if = 1, HAI WAAS study code is switched in. */
+/* if = 1, HAI WAAS study code will be switched in if SBAS data is available. */
 int waas_study = 0;
+
+/* if = 1, HAI WAAS study code is switched in. */
+int waas_calc = 0;
 #endif
 
 static const char rcsid[]="$Id: rnx2rtkp.c,v 1.1 2008/07/17 21:55:16 ttaka Exp $";
@@ -72,7 +75,7 @@ static const char *help[]={
 " -y level  output soltion status (0:off,1:states,2:residuals) [0]",
 " -x level  debug trace level (0:off) [0]"
 #ifdef WAAS_STUDY
-," -ws       switch in WAAS study code [switched out]"
+," -ws       switch in WAAS study code if SBAS data is available [switched out]"
 #endif
 };
 /* show message --------------------------------------------------------------*/
