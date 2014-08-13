@@ -9,6 +9,7 @@
 extern double varrx(double , int );
 extern double varfcorr(int );
 extern double varicorr(int );
+int waas_calc = 1;
 
 /* varrx() */
 void unittest1(void)

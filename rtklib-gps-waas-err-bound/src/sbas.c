@@ -955,7 +955,7 @@ extern int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
 *          int*    vobs2obs  I mapping of valid obs index to all obs index
 *          double* var       I array of pseudorange variances (meter^2)
 *          protlevels_t* pl  O pointer to protection level struct (meter)
-* return : status (0:ok,1:singular matrix error)
+* return : status (0:ok,1:singular matrix,2:null pointer,3:too few obs)
 */
 extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 		protlevels_t *pl) {
@@ -965,16 +965,16 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 	double d2east, d2north, d2en, dmajor;
 	double *d, *g;
 
-    trace(4,"waasprotlevels: nv=%d azel=%.3f %.3f vobs2obs=%d %d"
-    		"var=%.3f %.3f\n",
-    		nv,azel[0]*R2D,azel[1]*R2D,vobs2obs[0],vobs2obs[1],
-    		var[0], var[1]);
-
     /* Check for NULL pointers.  */
     if (!pl || !azel || !vobs2obs || !var) {
     	trace(4,"waasprotlevels: protection levels not calculated due to null pointer\n");
     	return 2;
     }
+
+    trace(4,"waasprotlevels: nv=%d azel=%.3f %.3f vobs2obs=%d %d"
+    		"var=%.3f %.3f\n",
+    		nv,azel[0]*R2D,azel[1]*R2D,vobs2obs[0],vobs2obs[1],
+    		var[0], var[1]);
 
     /* Check for sufficient obs */
     if (nv < 4) {
@@ -1013,7 +1013,7 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 				d[A4(ii,jj)] += g[ii] * g[jj] / var[i];
 	}
 	trace(5, "waasprotlevels: inverse D matrix = \n"); tracemat(5,d,4,4,13,6);
-	if (matinv(d,4)) {
+	if (matinv(d,4) == -1) {
         trace(1,"waasprotlevels: Singular matrix.\n");
         pl->hpl = 0.;
         pl->vpl = 0.;
