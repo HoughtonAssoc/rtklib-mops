@@ -131,7 +131,7 @@ void unittest1(void)
     	hpl = 6.00 * dmajor;
     	vpl = 5.33 * sqrt(d[A4(UP,UP)]);
 
-    	/* Calculate protection levels with function under test. */
+    	/* Calculate protection levels with the function under test. */
     	assert(!waasprotlevels(azel, nobs, vobs2obs, var, &pl));
 
     	/* Verify that protection levels agree. */
@@ -140,7 +140,7 @@ void unittest1(void)
     } /* Loop over test data sets. */
     fclose(fp);
 
-    PRINT_OK("unittest1");
+    PRINT_OK("utest1");
 }
 
 /* Null pointer tests. */
@@ -155,7 +155,7 @@ void unittest2(void)
 	assert(waasprotlevels(azel, nobs, vobs2obs, NULL, &pl ) == 2);
 	assert(waasprotlevels(azel, nobs, vobs2obs, var , NULL) == 2);
 
-    PRINT_OK("unittest2")
+    PRINT_OK("utest2")
 }
 
 /* Too few observations test. */
@@ -167,7 +167,7 @@ void unittest3(void)
 
    	assert(waasprotlevels(azel, nobs, vobs2obs, var, &pl) == 3);
 
-   	PRINT_OK("unittest3");
+   	PRINT_OK("utest3");
 }
 
 /*
@@ -187,7 +187,7 @@ void unittest4(void)
 	/* Calculate protection levels with function under test. */
 	assert(waasprotlevels(azel, nobs, vobs2obs, var, &pl) == 1);
 
-    PRINT_OK("unittest4");
+    PRINT_OK("utest4");
 }
 
 int main(void)

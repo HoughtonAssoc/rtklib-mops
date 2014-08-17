@@ -38,7 +38,7 @@ void unittest1(void)
 	vrx=varrx(el[2]*D2R,sys[2]);
         assert(fabs(vrx-0.018465)<1E-6);
 
-    printf("%s utset1 : OK\n",__FILE__);
+    printf("%s utest1 : OK\n",__FILE__);
 }
 /* varfcorr() */
 void unittest2(void)
@@ -56,7 +56,7 @@ void unittest2(void)
 		assert(udre==0.0);
     }
     
-    printf("%s utset2 : OK\n",__FILE__);
+    printf("%s utest2 : OK\n",__FILE__);
 }
 /* varicorr() */
 void unittest3(void)
@@ -74,7 +74,7 @@ void unittest3(void)
 		assert(give==0.0);
     }
 
-    printf("%s utset3 : OK\n",__FILE__);
+    printf("%s utest3 : OK\n",__FILE__);
 }
 int main(void)
 {
