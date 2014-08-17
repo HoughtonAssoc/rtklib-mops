@@ -134,93 +134,19 @@ $(CMD_WS) : $(OBJS)
 $(CMD_NOWS) : $(OBJS_NOWS)
 	$(CC) -o $(CMD_NOWS) $(OPTIM) $(OBJS_NOWS) $(LDLIBS)
 
-# Rules for making object files with WAAS study code included
-rnx2rtkp.o : ../rnx2rtkp.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY ../rnx2rtkp.c
-rtkcmn.o   : $(SRC)/rtkcmn.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rtkcmn.c
-rinex.o    : $(SRC)/rinex.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rinex.c
-rtkpos.o   : $(SRC)/rtkpos.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rtkpos.c
-postpos.o  : $(SRC)/postpos.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/postpos.c
-solution.o : $(SRC)/solution.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/solution.c
-lambda.o   : $(SRC)/lambda.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/lambda.c
-geoid.o    : $(SRC)/geoid.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/geoid.c
-sbas.o     : $(SRC)/sbas.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/sbas.c
-preceph.o  : $(SRC)/preceph.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/preceph.c
-pntpos.o   : $(SRC)/pntpos.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/pntpos.c
-ephemeris.o: $(SRC)/ephemeris.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/ephemeris.c
-options.o  : $(SRC)/options.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/options.c
-ppp.o      : $(SRC)/ppp.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/ppp.c
-ppp_ar.o   : $(SRC)/ppp_ar.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/ppp_ar.c
-rtcm.o     : $(SRC)/rtcm.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rtcm.c
-rtcm2.o    : $(SRC)/rtcm2.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rtcm2.c
-rtcm3.o    : $(SRC)/rtcm3.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rtcm3.c
-rtcm3e.o   : $(SRC)/rtcm3e.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/rtcm3e.c
-ionex.o    : $(SRC)/ionex.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/ionex.c
-qzslex.o    : $(SRC)/qzslex.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) -DWAAS_STUDY $(SRC)/qzslex.c
+# Pattern rules for generating object files from C files in the RTKLIB
+# source directory.
+%.o : $(SRC)/%.c $(SRC)/rtklib.h makefile
+	$(CC) -c $(CFLAGS) -DWAAS_STUDY $< -o $@
+%-nows.o : $(SRC)/%.c $(SRC)/rtklib.h makefile
+	$(CC) -c $(CFLAGS) $< -o $@
 
-# Rules for making object files without WAAS study code included
-rnx2rtkp-nows.o : ../rnx2rtkp.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) ../rnx2rtkp.c -o rnx2rtkp-nows.o
-rtkcmn-nows.o   : $(SRC)/rtkcmn.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rtkcmn.c -o rtkcmn-nows.o
-rinex-nows.o    : $(SRC)/rinex.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rinex.c -o rinex-nows.o
-rtkpos-nows.o   : $(SRC)/rtkpos.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rtkpos.c -o rtkpos-nows.o
-postpos-nows.o  : $(SRC)/postpos.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/postpos.c -o postpos-nows.o
-solution-nows.o : $(SRC)/solution.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/solution.c -o solution-nows.o
-lambda-nows.o   : $(SRC)/lambda.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/lambda.c -o lambda-nows.o
-geoid-nows.o    : $(SRC)/geoid.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/geoid.c -o geoid-nows.o
-sbas-nows.o     : $(SRC)/sbas.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/sbas.c -o sbas-nows.o
-preceph-nows.o  : $(SRC)/preceph.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/preceph.c -o preceph-nows.o
-pntpos-nows.o   : $(SRC)/pntpos.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/pntpos.c -o pntpos-nows.o
-ephemeris-nows.o: $(SRC)/ephemeris.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/ephemeris.c -o ephemeris-nows.o
-options-nows.o  : $(SRC)/options.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/options.c -o options-nows.o
-ppp-nows.o      : $(SRC)/ppp.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/ppp.c -o ppp-nows.o
-ppp_ar-nows.o   : $(SRC)/ppp_ar.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/ppp_ar.c -o ppp_ar-nows.o
-rtcm-nows.o     : $(SRC)/rtcm.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rtcm.c -o rtcm-nows.o
-rtcm2-nows.o    : $(SRC)/rtcm2.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rtcm2.c -o rtcm2-nows.o
-rtcm3-nows.o    : $(SRC)/rtcm3.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rtcm3.c -o rtcm3-nows.o
-rtcm3e-nows.o   : $(SRC)/rtcm3e.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/rtcm3e.c -o rtcm3e-nows.o
-ionex-nows.o    : $(SRC)/ionex.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/ionex.c -o ionex-nows.o
-qzslex-nows.o    : $(SRC)/qzslex.c $(SRC)/rtklib.h makefile
-	$(CC) -c $(CFLAGS) $(SRC)/qzslex.c -o qzslex-nows.o
+# Pattern rules for generating object files from C files in the
+# parent directory of this directory.
+%.o : ../%.c $(SRC)/rtklib.h makefile
+	$(CC) -c $(CFLAGS) -DWAAS_STUDY $< -o $@
+%-nows.o : ../%.c $(SRC)/rtklib.h makefile
+	$(CC) -c $(CFLAGS) $< -o $@
 
 INPUT11 = ../../../test/data/rinex/07590920.05o ../../../test/data/rinex/30400920.05n
 INPUT12 = ../../../test/data/rinex/30400920.05o
@@ -240,7 +166,7 @@ print-ws-test-summary : test
 
 # Tests that apply with WAAS_STUDY switched in
 .PHONY : test
-test : $(CMD_WS)
+test :
 test : test1.pos test2.pos test3.pos test4.pos test5.pos test6.pos
 test : test7.pos test8.pos test9.pos test10.pos
 test : test11.pos test12.pos test13.pos test14.pos test15.pos
@@ -254,7 +180,7 @@ print-co-test-summary : test-co
 
 # Tests that apply with WAAS_STUDY compiled in but not switched in
 .PHONY : test-co
-test-co : $(CMD_WS)
+test-co :
 test-co : test1-co.pos test2-co.pos test3-co.pos test4-co.pos test5-co.pos test6-co.pos
 test-co : test7-co.pos test8-co.pos test9-co.pos test10-co.pos
 test-co : test11-co.pos test12-co.pos test13-co.pos test14-co.pos test15-co.pos
@@ -268,7 +194,7 @@ print-nows-test-summary : test-nows
 
 # Tests that apply without WAAS_STUDY compiled in
 .PHONY : test-nows
-test-nows : $(CMD_NOWS)
+test-nows :
 test-nows : test1-nows.pos test2-nows.pos test3-nows.pos test4-nows.pos test5-nows.pos test6-nows.pos
 test-nows : test7-nows.pos test8-nows.pos test9-nows.pos test10-nows.pos
 test-nows : test11-nows.pos test12-nows.pos test13-nows.pos test14-nows.pos test15-nows.pos
@@ -277,268 +203,268 @@ test-nows : test21-nows.pos test22-nows.pos test23-nows.pos test24-nows.pos test
 test-nows : test26-nows.pos test27-nows.pos test28-nows.pos
 
 # Rules for running tests with WAAS study code switched in
-test1.pos :
-	./runtest.sh "$(CMD_WS) -ws $(INPUT11) -x 5 $(OPTS1) -o test1.pos" \
-	 test1-ws test1.pos-expected test1.pos
-test2.pos :
+test1.pos : $(CMD_WS)
+	./runtest.sh "$(CMD_WS) -ws $(INPUT11) -x 5 $(OPTS1) -o $@" \
+	 test1-ws $@-expected $@
+test2.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -e $(OPTS1) $(INPUT11)" test2-ws \
-	 test2.pos-expected test2.pos > test2.pos
-test3.pos :
+	 $@-expected $@ > $@
+test3.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test3-ws test3.pos-expected test3.pos > test3.pos
-test4.pos :
+	 test3-ws $@-expected test3.pos > test3.pos
+test4.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 3 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test4-ws test4.pos-expected test4.pos > test4.pos
-test5.pos :
+	 test4-ws $@-expected $@ > $@
+test5.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -m 15 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test5-ws test5.pos-expected test5.pos > test5.pos
-test6.pos :
+	 test5-ws $@-expected $@ > $@
+test6.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -f 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test6-ws test6.pos-expected test6.pos > test6.pos
-test7.pos :
+	 test6-ws $@-expected $@ > $@
+test7.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -v 5 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test7-ws test7.pos-expected test7.pos > test7.pos
-test8.pos :
+	 test7-ws $@-expected $@ > $@
+test8.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -i -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test8-ws test8.pos-expected test8.pos > test8.pos
-test9.pos :
+	 test8-ws $@-expected $@ > $@
+test9.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 $(OPTS1) $(INPUT11)" test9-ws \
-	 test9.pos-expected test9.pos > test9.pos
-test10.pos :
-	./runtest.sh "$(CMD_WS) -ws -t -p 0 $(OPTS1) $(INPUT11) -o test10.pos" \
-	 test10-ws test10.pos-expected test10.pos
-test11.pos :
+	 $@-expected $@ > $@
+test10.pos : $(CMD_WS)
+	./runtest.sh "$(CMD_WS) -ws -t -p 0 $(OPTS1) $(INPUT11) -o $@" \
+	 test10-ws $@-expected $@
+test11.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 -n $(OPTS1) $(INPUT11)" test11-ws \
-	 test11.pos-expected test11.pos > test11.pos
-test12.pos :
+	 $@-expected $@ > $@
+test12.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 -g $(OPTS1) $(INPUT11)" test12-ws \
-	 test12.pos-expected test12.pos > test12.pos
-test13.pos :
+	 $@-expected $@ > $@
+test13.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 $(OPTS1) $(INPUT11)" test13-ws \
-	 test13.pos-expected test13.pos > test13.pos
-test14.pos :
+	 $@-expected $@ > $@
+test14.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 -u $(OPTS1) $(INPUT11)" test14-ws \
-	 test14.pos-expected test14.pos > test14.pos
-test15.pos :
+	 $@-expected $@ > $@
+test15.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 -d 9 $(OPTS1) $(INPUT11)" test15-ws \
-	 test15.pos-expected test15.pos > test15.pos
-test16.pos :
+	 $@-expected $@ > $@
+test16.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 0 -s , $(OPTS1) $(INPUT11)" test16-ws \
-	 test16.pos-expected test16.pos > test16.pos
-test17.pos :
+	 $@-expected $@ > $@
+test17.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -b -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test17-ws test17.pos-expected test17.pos > test17.pos
-test18.pos :
+	 test17-ws $@-expected $@ > $@
+test18.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -c -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test18-ws test18.pos-expected test18.pos > test18.pos
-test19.pos :
+	 test18-ws $@-expected $@ > $@
+test19.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -h -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test19-ws test19.pos-expected test19.pos > test19.pos
-test20.pos :
+	 test19-ws $@-expected $@ > $@
+test20.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -t -p 4 -a $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test20-ws test20.pos-expected test20.pos > test20.pos
-test21.pos :
+	 test20-ws $@-expected $@ > $@
+test21.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws $(INPUT11) $(INPUT12)" test21-ws \
-	 test21.pos-expected test21.pos > test21.pos
-test22.pos :
+	 $@-expected $@ > $@
+test22.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k opts1.conf $(INPUT11) $(INPUT12)" \
-	 test22-ws test22.pos-expected test22.pos > test22.pos
-test23.pos :
+	 test22-ws $@-expected $@ > $@
+test23.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k opts2.conf $(INPUT11) $(INPUT12)" \
-	 test23-ws test23.pos-expected test23.pos > test23.pos
-test24.pos :
+	 test23-ws $@-expected $@ > $@
+test24.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k opts3.conf $(INPUT11) $(INPUT12) -y 2 \
-	 -o test24.pos" test24-ws test24.pos-expected test24.pos
-test25.pos :
+	 -o $@" test24-ws $@-expected $@
+test25.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k opts4.conf $(INPUT11) $(INPUT12) -y 2 \
-	 -o test25.pos" test25-ws test25.pos-expected test25.pos
-test26.pos :
+	 -o $@" test25-ws $@-expected $@
+test26.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k SSSS.conf $(USLO3610INPUT) \
-	 Geo135_00b4_1407_03.sbs -o test26.pos" test26-ws test26-ws.pos-expected \
-	 test26.pos
-test27.pos :
+	 Geo135_00b4_1407_03.sbs -o $@" test26-ws test26-ws.pos-expected \
+	 $@
+test27.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k SBMB.conf $(USLO3610INPUT) \
-	 -o test27.pos" test27-ws test27.pos-expected test27.pos
-test28.pos :
+	 -o $@" test27-ws $@-expected $@
+test28.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -ws -k SSSS_RAIM.conf $(USLO3610INPUT) \
-	 Geo135_00b4_1407_03.sbs -o test28.pos" test28-ws test28-ws.pos-expected \
-	 test28.pos
+	 Geo135_00b4_1407_03.sbs -o $@" test28-ws test28-ws.pos-expected \
+	 $@
 
 # Rules for running tests with WAAS study code compiled in but not switched in
-test1-co.pos :
-	./runtest.sh "$(CMD_WS) $(INPUT11) -x 5 $(OPTS1) -o test1-co.pos" \
-	 test1-co test1.pos-expected test1-co.pos
-test2-co.pos :
+test1-co.pos : $(CMD_WS)
+	./runtest.sh "$(CMD_WS) $(INPUT11) -x 5 $(OPTS1) -o $@" \
+	 test1-co test1.pos-expected $@
+test2-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -e $(OPTS1) $(INPUT11)" test2-co \
-	 test2.pos-expected test2-co.pos > test2-co.pos
-test3-co.pos :
+	 test2.pos-expected $@ > $@
+test3-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test3-co test3.pos-expected test3-co.pos > test3-co.pos
-test4-co.pos :
+	 test3-co test3.pos-expected $@ > $@
+test4-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 3 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test4-co test4.pos-expected test4-co.pos > test4-co.pos
-test5-co.pos :
+	 test4-co test4.pos-expected $@ > $@
+test5-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -m 15 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test5-co test5.pos-expected test5-co.pos > test5-co.pos
-test6-co.pos :
+	 test5-co test5.pos-expected $@ > $@
+test6-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -f 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test6-co test6.pos-expected test6-co.pos > test6-co.pos
-test7-co.pos :
+	 test6-co test6.pos-expected $@ > $@
+test7-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -v 5 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test7-co test7.pos-expected test7-co.pos > test7-co.pos
-test8-co.pos :
+	 test7-co test7.pos-expected $@ > $@
+test8-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -i -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test8-co test8.pos-expected test8-co.pos > test8-co.pos
-test9-co.pos :
+	 test8-co test8.pos-expected $@ > $@
+test9-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 $(OPTS1) $(INPUT11)" test9-co \
-	 test9.pos-expected test9-co.pos > test9-co.pos
-test10-co.pos :
-	./runtest.sh "$(CMD_WS) -t -p 0 $(OPTS1) $(INPUT11) -o test10-co.pos" \
-	 test10-co test10.pos-expected test10-co.pos
-test11-co.pos :
+	 test9.pos-expected $@ > $@
+test10-co.pos : $(CMD_WS)
+	./runtest.sh "$(CMD_WS) -t -p 0 $(OPTS1) $(INPUT11) -o $@" \
+	 test10-co test10.pos-expected $@
+test11-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 -n $(OPTS1) $(INPUT11)" test11-co \
-	 test11.pos-expected test11-co.pos > test11-co.pos
-test12-co.pos :
+	 test11.pos-expected $@ > $@
+test12-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 -g $(OPTS1) $(INPUT11)" test12-co \
-	 test12.pos-expected test12-co.pos > test12-co.pos
-test13-co.pos :
+	 test12.pos-expected $@ > $@
+test13-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 $(OPTS1) $(INPUT11)" test13-co \
-	 test13.pos-expected test13-co.pos > test13-co.pos
-test14-co.pos :
+	 test13.pos-expected $@ > $@
+test14-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 -u $(OPTS1) $(INPUT11)" test14-co \
-	 test14.pos-expected test14-co.pos > test14-co.pos
-test15-co.pos :
+	 test14.pos-expected $@ > $@
+test15-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 -d 9 $(OPTS1) $(INPUT11)" test15-co \
-	 test15.pos-expected test15-co.pos > test15-co.pos
-test16-co.pos :
+	 test15.pos-expected $@ > $@
+test16-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 0 -s , $(OPTS1) $(INPUT11)" test16-co \
-	 test16.pos-expected test16-co.pos > test16-co.pos
-test17-co.pos :
+	 test16.pos-expected $@ > $@
+test17-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -b -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test17-co test17.pos-expected test17-co.pos > test17-co.pos
-test18-co.pos :
+	 test17-co test17.pos-expected $@ > $@
+test18-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -c -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test18-co test18.pos-expected test18-co.pos > test18-co.pos
-test19-co.pos :
+	 test18-co test18.pos-expected $@ > $@
+test19-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -h -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test19-co test19.pos-expected test19-co.pos > test19-co.pos
-test20-co.pos :
+	 test19-co test19.pos-expected $@ > $@
+test20-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -t -p 4 -a $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test20-co test20.pos-expected test20-co.pos > test20-co.pos
-test21-co.pos :
+	 test20-co test20.pos-expected $@ > $@
+test21-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) $(INPUT11) $(INPUT12)" test21-co \
-	 test21.pos-expected test21-co.pos > test21-co.pos
-test22-co.pos :
+	 test21.pos-expected $@ > $@
+test22-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k opts1.conf $(INPUT11) $(INPUT12)" \
-	 test22-co test22.pos-expected test22-co.pos > test22-co.pos
-test23-co.pos :
+	 test22-co test22.pos-expected $@ > $@
+test23-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k opts2.conf $(INPUT11) $(INPUT12)" \
-	 test23-co test23.pos-expected test23-co.pos > test23-co.pos
-test24-co.pos :
+	 test23-co test23.pos-expected $@ > $@
+test24-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k opts3.conf $(INPUT11) $(INPUT12) -y 2 \
-	 -o test24-co.pos" test24-co test24.pos-expected test24-co.pos
-test25-co.pos :
+	 -o $@" test24-co test24.pos-expected $@
+test25-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k opts4.conf $(INPUT11) $(INPUT12) -y 2 \
-	 -o test25-co.pos" test25-co test25.pos-expected test25-co.pos
-test26-co.pos :
+	 -o $@" test25-co test25.pos-expected $@
+test26-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k SSSS.conf $(USLO3610INPUT) \
-	 Geo135_00b4_1407_03.sbs -o test26-co.pos" test26-co test26.pos-expected \
-	 test26-co.pos
-test27-co.pos :
+	 Geo135_00b4_1407_03.sbs -o $@" test26-co test26.pos-expected \
+	 $@
+test27-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k SBMB.conf $(USLO3610INPUT) \
-	 -o test27-co.pos" test27-co test27.pos-expected test27-co.pos
-test28-co.pos :
+	 -o $@" test27-co test27.pos-expected $@
+test28-co.pos : $(CMD_WS)
 	./runtest.sh "$(CMD_WS) -k SSSS_RAIM.conf $(USLO3610INPUT) \
-	 Geo135_00b4_1407_03.sbs -o test28-co.pos" test28-co test28.pos-expected \
-	 test28-co.pos
+	 Geo135_00b4_1407_03.sbs -o $@" test28-co test28.pos-expected \
+	 $@
 
 # Rules for running tests without WAAS study code compiled in
-test1-nows.pos : 
-	./runtest.sh "$(CMD_NOWS) $(INPUT11) -x 5 $(OPTS1) -o test1-nows.pos" \
-     test1-nows test1.pos-expected test1-nows.pos
-test2-nows.pos :
+test1-nows.pos : $(CMD_NOWS) 
+	./runtest.sh "$(CMD_NOWS) $(INPUT11) -x 5 $(OPTS1) -o $@" \
+     test1-nows test1.pos-expected $@
+test2-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -e $(OPTS1) $(INPUT11)" test2-nows \
-	 test2.pos-expected test2-nows.pos > test2-nows.pos
-test3-nows.pos :
+	 test2.pos-expected $@ > $@
+test3-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test3-nows test3.pos-expected test3-nows.pos > test3-nows.pos
-test4-nows.pos :
+	 test3-nows test3.pos-expected $@ > $@
+test4-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 3 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test4-nows test4.pos-expected test4-nows.pos > test4-nows.pos
-test5-nows.pos :
+	 test4-nows test4.pos-expected $@ > $@
+test5-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -m 15 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test5-nows test5.pos-expected test5-nows.pos > test5-nows.pos
-test6-nows.pos :
+	 test5-nows test5.pos-expected $@ > $@
+test6-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -f 1 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test6-nows test6.pos-expected test6-nows.pos > test6-nows.pos
-test7-nows.pos :
+	 test6-nows test6.pos-expected $@ > $@
+test7-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -v 5 -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test7-nows test7.pos-expected test7-nows.pos > test7-nows.pos
-test8-nows.pos :
+	 test7-nows test7.pos-expected $@ > $@
+test8-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -i -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test8-nows test8.pos-expected test8-nows.pos > test8-nows.pos
-test9-nows.pos :
+	 test8-nows test8.pos-expected $@ > $@
+test9-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 $(OPTS1) $(INPUT11)" test9-nows \
-	 test9.pos-expected test9-nows.pos > test9-nows.pos
-test10-nows.pos :
-	./runtest.sh "$(CMD_NOWS) -t -p 0 $(OPTS1) $(INPUT11) -o test10-nows.pos" \
-	 test10-nows test10.pos-expected test10-nows.pos
-test11-nows.pos :
+	 test9.pos-expected $@ > $@
+test10-nows.pos : $(CMD_NOWS)
+	./runtest.sh "$(CMD_NOWS) -t -p 0 $(OPTS1) $(INPUT11) -o $@" \
+	 test10-nows test10.pos-expected $@
+test11-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 -n $(OPTS1) $(INPUT11)" test11-nows \
-	 test11.pos-expected test11-nows.pos > test11-nows.pos
-test12-nows.pos :
+	 test11.pos-expected $@ > $@
+test12-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 -g $(OPTS1) $(INPUT11)" test12-nows \
-	 test12.pos-expected test12-nows.pos > test12-nows.pos
-test13-nows.pos :
+	 test12.pos-expected $@ > $@
+test13-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 $(OPTS1) $(INPUT11)" test13-nows \
-	 test13.pos-expected test13-nows.pos > test13-nows.pos
-test14-nows.pos :
+	 test13.pos-expected $@ > $@
+test14-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 -u $(OPTS1) $(INPUT11)" test14-nows \
-	 test14.pos-expected test14-nows.pos > test14-nows.pos
-test15-nows.pos :
+	 test14.pos-expected $@ > $@
+test15-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 -d 9 $(OPTS1) $(INPUT11)" test15-nows \
-	 test15.pos-expected test15-nows.pos > test15-nows.pos
-test16-nows.pos :
+	 test15.pos-expected $@ > $@
+test16-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 0 -s , $(OPTS1) $(INPUT11)" test16-nows \
-	 test16.pos-expected test16-nows.pos > test16-nows.pos
-test17-nows.pos :
+	 test16.pos-expected $@ > $@
+test17-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -b -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test17-nows test17.pos-expected test17-nows.pos > test17-nows.pos
-test18-nows.pos :
+	 test17-nows test17.pos-expected $@ > $@
+test18-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -c -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test18-nows test18.pos-expected test18-nows.pos > test18-nows.pos
-test19-nows.pos :
+	 test18-nows test18.pos-expected $@ > $@
+test19-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -h -e $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test19-nows test19.pos-expected test19-nows.pos > test19-nows.pos
-test20-nows.pos :
+	 test19-nows test19.pos-expected $@ > $@
+test20-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -t -p 4 -a $(OPTS1) $(INPUT11) $(INPUT12)" \
-	 test20-nows test20.pos-expected test20-nows.pos > test20-nows.pos
-test21-nows.pos :
+	 test20-nows test20.pos-expected $@ > $@
+test21-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) $(INPUT11) $(INPUT12)" test21-nows \
-	 test21.pos-expected test21-nows.pos > test21-nows.pos
-test22-nows.pos :
+	 test21.pos-expected $@ > $@
+test22-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k opts1.conf $(INPUT11) $(INPUT12)" test22-nows \
-	 test22.pos-expected test22-nows.pos > test22-nows.pos
-test23-nows.pos :
+	 test22.pos-expected $@ > $@
+test23-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k opts2.conf $(INPUT11) $(INPUT12)" test23-nows \
-	 test23.pos-expected test23-nows.pos > test23-nows.pos
-test24-nows.pos :
+	 test23.pos-expected $@ > $@
+test24-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k opts3.conf $(INPUT11) $(INPUT12) -y 2 \
-	 -o test24-nows.pos" test24-nows test24.pos-expected test24-nows.pos
-test25-nows.pos :
+	 -o $@" test24-nows test24.pos-expected $@
+test25-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k opts4.conf $(INPUT11) $(INPUT12) -y 2 \
-	 -o test25-nows.pos" test25-nows test25.pos-expected test25-nows.pos
-test26-nows.pos :
+	 -o $@" test25-nows test25.pos-expected $@
+test26-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k SSSS.conf $(USLO3610INPUT) \
-	 Geo135_00b4_1407_03.sbs -o test26-nows.pos" test26-nows test26.pos-expected \
-	 test26-nows.pos
-test27-nows.pos :
+	 Geo135_00b4_1407_03.sbs -o $@" test26-nows test26.pos-expected \
+	 $@
+test27-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k SBMB.conf $(USLO3610INPUT) \
-	 -o test27-nows.pos" test27-nows test27.pos-expected test27-nows.pos
-test28-nows.pos :
+	 -o $@" test27-nows test27.pos-expected $@
+test28-nows.pos : $(CMD_NOWS)
 	./runtest.sh "$(CMD_NOWS) -k SSSS_RAIM.conf $(USLO3610INPUT) \
-	 Geo135_00b4_1407_03.sbs -o test28-nows.pos" test28-nows test28.pos-expected \
-	 test28-nows.pos
+	 Geo135_00b4_1407_03.sbs -o $@" test28-nows test28.pos-expected \
+	 $@
 
 .PHONY : all_trace trace_output trace_output_nows
 all_trace : trace_output trace_output_nows
