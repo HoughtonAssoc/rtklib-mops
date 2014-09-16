@@ -40,9 +40,11 @@ extern double varrx(double el, int sys)
 {
     double varmp,varsignal;
 	double aad_a_min;		/* max noise bound for AAD-A equipment */
+    trace(4,"varrx:  el=%5.1f sys=%d\n",el,sys);
     aad_a_min=sys==SYS_SBS?1.8:(sys==SYS_GPS?0.36:0.0);
     varmp=SQR(0.13+0.53*exp(-el*R2D/10.0));
 	varsignal=SQR(aad_a_min);
+    trace(5,"varrx:  aad_a_min=%4.2lf varmp=%lf varsignal=%lf\n",aad_a_min,varmp,varsignal);
     return (varmp+varsignal);
 }
 #endif
@@ -50,8 +52,10 @@ extern double varrx(double el, int sys)
 static double varerr(const prcopt_t *opt, double el, int sys)
 {
     double fact,varr;
+    trace(4,"varerr:  el=%5.1f sys=%d\n",el,sys);
     fact=sys==SYS_GLO?EFACT_GLO:(sys==SYS_SBS?EFACT_SBS:EFACT_GPS);
     varr=SQR(opt->err[0])*(SQR(opt->err[1])+SQR(opt->err[2])/sin(el));
+    trace(5,"varerr:  fact=%lf varr=%lf\n",fact,varr);
     if (opt->ionoopt==IONOOPT_IFLC) varr*=SQR(3.0); /* iono-free */
     return SQR(fact)*varr;
 }
