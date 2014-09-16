@@ -44,7 +44,7 @@ static const char rcsid[]="$Id: sbas.c,v 1.1 2008/07/17 21:48:06 ttaka Exp $";
 #define WEEKOFFSET  1024        /* gps week offset for NovAtel OEM-3 */
 
 #ifdef WAAS_STUDY
-extern int waas_study;
+extern int waas_calc;
 #endif
 
 /* sbas igp definition -------------------------------------------------------*/
@@ -719,7 +719,7 @@ extern int sbsioncorr(gtime_t time, const nav_t *nav, const double *pos,
         t=timediff(time,igp[i]->t0);
         *delay+=w[i]*igp[i]->delay;
 #ifdef WAAS_STUDY
-        if (waas_study) {
+        if (waas_calc) {
         	*var+=w[i]*varicorr(igp[i]->give);			/* updated by ACR 23-Jun-14 */
         } else {
             *var+=w[i]*varicorr(igp[i]->give)*9E-8*fabs(t);
@@ -846,7 +846,7 @@ static int sbsfastcorr(gtime_t time, int sat, const sbssat_t *sbssat,
         }
 #endif
 #ifdef WAAS_STUDY
-        if (waas_study) {
+        if (waas_calc) {
         	*var=varfcorr(p->fcorr.udre);	/* 26-Jun-14 ACR */
         } else {
             *var=varfcorr(p->fcorr.udre)+degfcorr(p->fcorr.ai)*t*t/2.0;
@@ -945,17 +945,17 @@ extern int sbsdecodemsg(gtime_t time, int prn, const unsigned int *words,
 #define SQR(x)   ((x)*(x))
 
 /**
-* Compute the WAAS protections levels as defined in Appendix J of the WAAS MOPS.
-* (RTCA DO-229D, Minimum operational performance standards for global
-* positioning system/wide area augmentation system airborne equipment,
-* RTCA inc, December 13, 2006)
+* Compute the WAAS protections levels as defined in Appendix J of the WAAS MOPS:
+* RTCA DO-229D, Minimum operational performance standards [MOPS] for global
+* positioning system/wide area augmentation system [WAAS] airborne equipment,
+* RTCA inc, December 13, 2006
 *
 * args   : double* azel      I array of satellite azimuth/elevation angles (rad)
 *          int     nv        I number of valid observations
 *          int*    vobs2obs  I mapping of valid obs index to all obs index
 *          double* var       I array of pseudorange variances (meter^2)
 *          protlevels_t* pl  O pointer to protection level struct (meter)
-* return : status (0:ok,1:singular matrix error)
+* return : status (0:ok,1:singular matrix,2:null pointer,3:too few obs)
 */
 extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 		protlevels_t *pl) {
@@ -965,15 +965,23 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 	double d2east, d2north, d2en, dmajor;
 	double *d, *g;
 
+    /* Check for NULL pointers.  */
+    if (!pl || !azel || !vobs2obs || !var) {
+    	trace(4,"waasprotlevels: protection levels not calculated due to null pointer\n");
+    	return 2;
+    }
+
     trace(4,"waasprotlevels: nv=%d azel=%.3f %.3f vobs2obs=%d %d"
     		"var=%.3f %.3f\n",
     		nv,azel[0]*R2D,azel[1]*R2D,vobs2obs[0],vobs2obs[1],
     		var[0], var[1]);
 
-    /* Check for NULL pointers.  */
-    if (!pl || !azel || !vobs2obs || !var) {
-    	trace(4,"waasprotlevels: protection levels not calculated due to null pointer\n");
-    	return 2;
+    /* Check for sufficient obs */
+    if (nv < 4) {
+        trace(4,"waasprotlevels: Insufficient obs\n");
+        pl->hpl = 0.;
+        pl->vpl = 0.;
+        return 3;
     }
 
     trace(5,"waasprotlevels: vobs2obs = "); traceimat(5,vobs2obs,1,nv,4);
@@ -1005,7 +1013,7 @@ extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
 				d[A4(ii,jj)] += g[ii] * g[jj] / var[i];
 	}
 	trace(5, "waasprotlevels: inverse D matrix = \n"); tracemat(5,d,4,4,13,6);
-	if (matinv(d,4)) {
+	if (matinv(d,4) == -1) {
         trace(1,"waasprotlevels: Singular matrix.\n");
         pl->hpl = 0.;
         pl->vpl = 0.;

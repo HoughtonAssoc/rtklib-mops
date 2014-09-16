@@ -1533,6 +1533,8 @@ extern int inputsol(unsigned char data, gtime_t ts, gtime_t te, double tint,
 extern int outprcopts(unsigned char *buff, const prcopt_t *opt);
 extern int outsolheads(unsigned char *buff, const solopt_t *opt);
 #ifdef WAAS_STUDY
+extern int waasprotlevels(double* azel, int nv, int* vobs2obs, double* var,
+		protlevels_t *pl);
 extern int outsols  (unsigned char *buff, const sol_t *sol, const double *rb,
                      const solopt_t *opt, protlevels_t *pl);
 #else

@@ -33,7 +33,7 @@ static const char rcsid[]="$Id:$";
 #define REL_HUMI    0.7         /* relative humidity for saastamoinen model */
 
 #ifdef WAAS_STUDY
-extern int waas_study;
+extern int waas_calc;
 
 /* variance of airborne receiver error (WAAS MOPS) ----------------------------*/
 extern double varrx(double el, int sys)
@@ -230,7 +230,7 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     
 #ifdef WAAS_STUDY
     int* vobs2obs;  /* Valid obs to obs mapping array. */
-    if (waas_study) vobs2obs = imat(1, n);
+    if (waas_calc) vobs2obs = imat(1, n);
 #endif
 
     trace(3,"resprng : n=%d\n",n);
@@ -286,8 +286,8 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 
 #ifdef WAAS_STUDY
         /* error variance */
-        if (waas_study) {
-            if (iter > 0) vobs2obs[nv] = i;
+        if (waas_calc) {
+            vobs2obs[nv] = i;
         	var[nv++]=varrx(azel[1+i*2],sys)+vare[i]+vion+vtrp;	/* ACR 2-Jul-14 */
         } else {
     		var[nv++]=varerr(opt,azel[1+i*2],sys)+vare[i]+vmeas+vion+vtrp;
@@ -302,7 +302,7 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
 
 #ifdef WAAS_STUDY
     /* Calculate WAAS protection levels. */
-    if (waas_study && iter > 0) {
+    if (waas_calc) {
     	waasprotlevels(azel, nv, vobs2obs, var, pl);
         free(vobs2obs);
     }

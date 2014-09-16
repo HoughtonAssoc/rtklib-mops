@@ -37,6 +37,10 @@ static const char rcsid[]="$Id: postpos.c,v 1.1 2008/07/17 21:48:06 ttaka Exp $"
 
 /* constants/global variables ------------------------------------------------*/
 
+#ifdef WAAS_STUDY
+extern int waas_study, waas_calc;
+#endif
+
 static pcvs_t pcvss={0};        /* receiver antenna parameters */
 static pcvs_t pcvsr={0};        /* satellite antenna parameters */
 static obs_t obss={0};          /* observation data */
@@ -1052,6 +1056,10 @@ static int execses_b(gtime_t ts, gtime_t te, double ti, const prcopt_t *popt,
     /* read prec ephemeris and sbas data */
     readpreceph(infile,n,popt,&navs,&sbss,&lexs);
     
+#ifdef WAAS_STUDY
+    waas_calc=sbss.n>0&&waas_study;
+#endif
+
     for (i=0;i<n;i++) if (strstr(infile[i],"%b")) break;
     
     if (i<n) { /* include base station keywords */

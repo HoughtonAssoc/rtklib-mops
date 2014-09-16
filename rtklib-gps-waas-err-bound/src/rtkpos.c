@@ -32,7 +32,7 @@
 #include "rtklib.h"
 
 #ifdef WAAS_STUDY
-extern int waas_study;
+extern int waas_study, waas_calc;
 #endif
 
 static const char rcsid[]="$Id:$";
@@ -213,7 +213,7 @@ static void outsolstat(rtk_t *rtk)
     }
     else {
 #ifdef WAAS_STUDY
-    	if (waas_study) {
+    	if (waas_calc) {
 			fprintf(fp_stat,"$POS,%d,%.3f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n",week,tow,
 					rtk->sol.stat,rtk->sol.rr[0],rtk->sol.rr[1],rtk->sol.rr[2],
 					rtk->pl.hpl,rtk->pl.vpl,0.0);
