@@ -111,14 +111,16 @@ LDLIBS  = -lm -lrt -lwinmm -L/usr/lib -L/usr/lib/w32api
 # List of object files with WAAS study code included
 OBJS =  rnx2rtkp.o rtkcmn.o rinex.o rtkpos.o postpos.o solution.o \
         lambda.o geoid.o sbas.o preceph.o pntpos.o ephemeris.o options.o\
-        ppp.o ppp_ar.o rtcm.o rtcm2.o rtcm3.o rtcm3e.o ionex.o qzslex.o
+        ppp.o ppp_ar.o rtcm.o rtcm2.o rtcm3.o rtcm3e.o ionex.o qzslex.o \
+        satcorrections.o
 
 # List of object files without WAAS study code included
 OBJS_NOWS =  rnx2rtkp-nows.o rtkcmn-nows.o rinex-nows.o rtkpos-nows.o \
         postpos-nows.o solution-nows.o lambda-nows.o geoid-nows.o \
         sbas-nows.o preceph-nows.o pntpos-nows.o ephemeris-nows.o \
         options-nows.o ppp-nows.o ppp_ar-nows.o rtcm-nows.o \
-        rtcm2-nows.o rtcm3-nows.o rtcm3e-nows.o ionex-nows.o qzslex-nows.o
+        rtcm2-nows.o rtcm3-nows.o rtcm3e-nows.o ionex-nows.o qzslex-nows.o \
+        satcorrections.o
 
 CMD_WS   = ./rnx2rtkp.exe
 CMD_NOWS = ./rnx2rtkp-nows.exe

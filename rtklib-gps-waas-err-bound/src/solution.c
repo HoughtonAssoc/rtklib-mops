@@ -39,6 +39,7 @@
 *-----------------------------------------------------------------------------*/
 #include <ctype.h>
 #include "rtklib.h"
+#include "satcorrections.h"
 
 #ifdef WAAS_STUDY
 extern int waas_calc;
@@ -1002,6 +1003,7 @@ static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
     double pos[3],dms1[3],dms2[3],P[9],Q[9];
     const char *sep=opt2sep(opt);
     char *p=(char *)buff;
+    SatCorrections* sc;
     
     trace(3,"outpos  :\n");
     
@@ -1032,10 +1034,16 @@ static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
                    sep,sqvar(Q[5]),sep,sol->age,sep,sol->ratio);
     }
 #else
-    p+=sprintf(p,"%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+    p+=sprintf(p,"%s%10.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f",
                sep,pos[2],sep,sol->stat,sep,sol->ns,sep,SQRT(Q[4]),sep,
                SQRT(Q[0]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),sep,sqvar(Q[2]),
                sep,sqvar(Q[5]),sep,sol->age,sep,sol->ratio);
+    while ((sc = getNextCorr()) != NULL) {
+    	p+=sprintf(p, "%s%2d%s%10.4f%s%10.4f%s%10.4f%s%10.4f%s%10.4f%s%10.4f%s%10.4f",
+    			sep, sc->prn, sep, sc->time, sep, sc->rs[0], sep, sc->rs[1], sep,
+    			sc->rs[2], sep,	sc->dts, sep, sc->dtrp, sep, sc->dion);
+    }
+    p+=sprintf(p, "\n");
 #endif
     return p-(char *)buff;
 }

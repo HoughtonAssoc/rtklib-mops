@@ -17,6 +17,7 @@
 *			2014/07/02 1.4	add varrx(), add varrx to rescode() PR variance
 *-----------------------------------------------------------------------------*/
 #include "rtklib.h"
+#include "satcorrections.h"
 
 static const char rcsid[]="$Id:$";
 
@@ -237,6 +238,7 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     
     ecef2pos(rr,pos);
     
+    clearCorr();
     for (i=0;i<n&&i<MAXOBS;i++) {
         vsat[i]=0; azel[i*2]=azel[1+i*2]=resp[i]=0.0;
         
@@ -268,6 +270,12 @@ static int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                       iter>0?opt->tropopt:TROPOPT_SAAS,&dtrp,&vtrp)) {
             continue;
         }
+
+        {
+        	int week;
+        	updateCorr(obs[i].sat, time2gpst(obs[i].time, &week), rs, CLIGHT*dts[i*2], dtrp, dion);
+        }
+
         /* pseudorange residual */
         v[nv]=P-(r+dtr-CLIGHT*dts[i*2]+dion+dtrp);
         
